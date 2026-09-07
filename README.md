@@ -1,30 +1,43 @@
-# NFL Connector
+# Move The Chains
 
-A puzzle game: connect two NFL players through a chain of shared teammates.
+A daily NFL puzzle: link two players through the teammates they shared a
+roster with.
 
 > Tom Brady → **Antonio Brown** → Ben Roethlisberger
 > (Brady & Brown: NE 2019, TB 2020–21 · Brown & Roethlisberger: PIT 2010–18)
 
-Two players count as teammates if they appear on the same team's roster in the
-same season. Each daily puzzle has a **par** — the fewest links it can be
-solved in, found by bidirectional BFS over the roster graph.
+Two players are teammates if they appear on the same team's roster in the same
+season. **Par** is the fewest links possible, found by bidirectional BFS over
+the roster graph.
 
-Modes: a **daily** puzzle seeded by the date (same for everyone), and **free
-play** where you pick either endpoint or shuffle a random pair.
+## How it plays
 
-Free play has three difficulty settings, which control how much the board
-gives away:
+**Downs.** A wrong guess costs a down. Convert a link and the chains move —
+four fresh downs. Burn all four on one link and it is a turnover. Downs are on
+in the **daily** and on **hard**; easy and medium free play have none.
 
-| | Plates and connectors show |
-|---|---|
-| Easy | team + seasons |
-| Medium | team only |
-| Hard | position only — rosters come from memory |
+**Difficulty** (free play only) controls how much the board gives away:
 
-Completing a chain reveals every connection regardless of setting, so hard
-mode pays off at the end. The daily puzzle is always full detail. Search
-results keep team codes at every setting, since they are needed to tell apart
-players who share a name.
+| | Plates and connectors show | Downs |
+|---|---|---|
+| Easy | team + seasons | no |
+| Medium | team only | no |
+| Hard | position only — rosters from memory | yes |
+
+Finishing reveals every connection regardless of setting. The daily is always
+full detail, and always four downs.
+
+**Share** encodes the drive without naming anyone, so posting a result cannot
+spoil the puzzle:
+
+```
+Move The Chains #1
+🔵🟨🟩🟡
+2 links · par 2 · 🚩1 · 💡2
+```
+
+Start, one square per link (green clean, yellow after a miss, 🏈 if the whole
+run was perfect), target. Par with no misses and no hints is a touchdown.
 
 ## Layout
 
@@ -32,6 +45,7 @@ players who share a name.
 data/game_data.json     compact teammate graph (committed, ~1.1 MB)
 game/template.html      the game; __GAME_DATA__ is replaced at build time
 game/index.html         generated artifact source (gitignored)
+design/                 design direction the current build came from
 scripts/                build + local preview
 raw/                    nflverse CSVs (gitignored, re-downloaded on demand)
 ```
@@ -44,36 +58,38 @@ raw/                    nflverse CSVs (gitignored, re-downloaded on demand)
 ./scripts/serve.ps1             # preview at http://localhost:8731/
 ```
 
-`build_game_data.ps1` downloads anything missing from `raw/`, so a clean
-checkout only needs the two build commands.
-
 ## Data
 
 Season rosters and draft picks from
 [nflverse](https://github.com/nflverse/nflverse-data), covering **2000–2026**:
-16,197 players, 40 team codes, ~1.1 MB after processing.
+16,197 players, 35 team codes, ~1.1 MB after processing.
 
-Three things the build has to handle:
+Four things the build and the game have to handle:
 
 - **Player identity.** `gsis_id` is ~100% populated from 2000 on, so players
-  merge cleanly across seasons. (Before ~1990 it is absent entirely, which is
-  why the window starts at 2000.)
+  merge cleanly across seasons. Before ~1990 it is absent entirely, which is
+  why the window starts at 2000.
 - **Team code aliases.** nflverse uses different abbreviations by era — `ARZ`
   for `ARI`, `BLT` for `BAL`, plus `CLV`, `HST`, `SL` — but never two codes for
   one franchise in the same season, so teammate detection was never affected.
   Left alone they still read wrong (a career showing "ARZ 2008–15, ARI 2016" as
-  two teams), so the build folds them to one code before collapsing stints,
-  which merges the adjoining seasons into a single run. Real relocations stay
-  distinct and era-accurate: `OAK` → Oakland Raiders, `LV` → Las Vegas.
+  two teams), so the build folds them before collapsing stints, merging the
+  adjoining seasons into one run. Real relocations stay distinct and
+  era-accurate: `OAK` → Oakland Raiders, `LV` → Las Vegas.
 - **Fame vs. window.** `w_av`, Pro Bowls, All-Pros and HOF from `draft_picks`
-  score how well-known a player is, used to pick puzzle endpoints and rank
-  search. Since those are career-wide but the graph starts in 2000, fame is
-  scaled by how many seasons a player actually has *inside* the window —
-  otherwise someone like Cris Dishman (one 2000 season, fame 155) shows up as
-  a puzzle endpoint. Endpoints also require 4+ in-window seasons.
+  score how well-known a player is. Those are career-wide but the graph starts
+  in 2000, so fame is scaled by in-window seasons and endpoints need 4+ —
+  otherwise Cris Dishman (one 2000 season, fame 155) turns up as a puzzle
+  endpoint. Undrafted stars are absent from `draft_picks` entirely, so a small
+  hand-set list covers them (Warner, Romo, Gates, Welker, Vinatieri…).
+- **Era proximity.** Endpoints must be within 6 years of each other, and the
+  daily draws from a stricter top-300 pool. Without it you get pairings like
+  Penei Sewell (2021–) and Gus Frerotte (–2008): a legal two-link path exists,
+  but solving it means knowing which twenty-year journeyman bridges the gap.
 
-Undrafted stars are absent from `draft_picks` entirely, so a small hand-set
-list in the build script covers them (Warner, Romo, Gates, Welker, Vinatieri…).
+Hints run their own BFS from the target and pick the **highest-fame** player
+that still keeps the chain at par, since the raw shortest path usually routes
+through a special-teamer nobody has heard of.
 
 ## Extending
 

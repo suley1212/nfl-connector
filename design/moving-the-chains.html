@@ -1,0 +1,943 @@
+<title>Moving the Chains</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+
+<style>
+  /* Committed single-theme: the doc *is* the proposal for a dark broadcast
+     identity, so every colour is painted explicitly rather than inherited. */
+  :root {
+    color-scheme: dark;
+    --pitch:     #0A0F0D;
+    --pitch-2:   #121A16;
+    --pitch-3:   #18221D;
+    --line:      #243029;
+    --line-2:    #1B241F;
+    --chalk:     #F4F7F2;
+    --steel:     #8C978F;
+    --dim:       #5E6A63;
+    --marker:    #FFD400;
+    --scrimmage: #2E7FE8;
+    --flag:      #E8562F;
+    --good:      #35C46B;
+    --turf:      #1B4D2E;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--pitch);
+    color: var(--chalk);
+    font-family: "Archivo", system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 940px; margin: 0 auto; padding: 40px 22px 90px; }
+
+  /* ------------------------------------------------------------ masthead -- */
+  .masthead { border-bottom: 3px solid var(--marker); padding-bottom: 22px; margin-bottom: 34px; }
+
+  .eyebrow {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--marker); margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: "Anton", Impact, sans-serif;
+    font-size: clamp(40px, 8.5vw, 76px);
+    line-height: .92;
+    letter-spacing: .005em;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+
+  .standfirst { font-size: 17px; color: var(--steel); max-width: 60ch; margin: 0; }
+  .standfirst b { color: var(--chalk); font-weight: 600; }
+
+  /* ------------------------------------------------------------ sections -- */
+  section { margin: 0 0 52px; scroll-margin-top: 20px; }
+
+  h2 {
+    font-family: "Anton", Impact, sans-serif;
+    font-size: 13px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--marker); font-weight: 400;
+    display: flex; align-items: center; gap: 12px;
+    margin: 0 0 6px;
+  }
+
+  h2::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+  h3 {
+    font-family: "Anton", Impact, sans-serif;
+    font-size: clamp(24px, 4vw, 34px); line-height: 1.05;
+    text-transform: uppercase; letter-spacing: .01em;
+    margin: 0 0 12px; text-wrap: balance;
+  }
+
+  p { margin: 0 0 14px; max-width: 68ch; }
+  p.lead { font-size: 16.5px; }
+  .muted { color: var(--steel); }
+  strong { font-weight: 600; }
+
+  /* the recurring "why this works" note — the principle, not the tactic */
+  .principle {
+    border-left: 3px solid var(--marker);
+    background: var(--pitch-2);
+    padding: 13px 16px;
+    margin: 18px 0;
+    max-width: 68ch;
+  }
+
+  .principle-k {
+    font-size: 9.5px; font-weight: 700; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--marker); display: block; margin-bottom: 5px;
+  }
+
+  .principle p { margin: 0; font-size: 14.5px; color: var(--chalk); }
+
+  /* ---------------------------------------------------------------- demo -- */
+  .demo {
+    background: var(--pitch-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin: 22px 0;
+    overflow: hidden;
+  }
+
+  .demo-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    padding: 11px 16px; background: var(--pitch-3);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .demo-title {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--steel);
+  }
+
+  .demo-body { padding: 20px 16px; }
+  .demo-foot {
+    padding: 12px 16px; border-top: 1px solid var(--line);
+    display: flex; gap: 8px; flex-wrap: wrap; background: var(--pitch-3);
+  }
+
+  .btn {
+    font: inherit; font-size: 11.5px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    padding: 9px 15px; border-radius: 3px; cursor: pointer;
+    background: transparent; color: var(--steel);
+    border: 1px solid var(--line);
+  }
+
+  .btn:hover { color: var(--chalk); border-color: var(--steel); }
+  .btn:focus-visible { outline: 2px solid var(--marker); outline-offset: 2px; }
+  .btn-key { background: var(--marker); color: #0A0F0D; border-color: var(--marker); }
+  .btn-key:hover { color: #0A0F0D; filter: brightness(1.1); }
+  .btn-bad { border-color: #4A2B24; color: #C67A67; }
+  .btn-bad:hover { color: var(--flag); border-color: var(--flag); }
+
+  /* ------------------------------------------------------------- theboard -- */
+  .board { max-width: 430px; margin: 0 auto; }
+
+  .zone {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 15px; border-radius: 3px;
+    position: relative; overflow: hidden;
+  }
+
+  .zone-start { background: linear-gradient(90deg, rgba(46,127,232,.20), rgba(46,127,232,.05)); border: 1px solid rgba(46,127,232,.45); }
+  .zone-end   { background: linear-gradient(90deg, rgba(255,212,0,.17), rgba(255,212,0,.04)); border: 1px solid rgba(255,212,0,.42); }
+
+  .zone-tag {
+    font-size: 9px; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; padding: 3px 7px; border-radius: 2px;
+    white-space: nowrap; flex: 0 0 auto;
+  }
+
+  .zone-start .zone-tag { background: var(--scrimmage); color: #fff; }
+  .zone-end   .zone-tag { background: var(--marker); color: #0A0F0D; }
+
+  .who { flex: 1 1 auto; min-width: 0; }
+
+  .who-name {
+    font-weight: 700; font-size: 16px; letter-spacing: -.01em;
+    text-transform: uppercase; line-height: 1.15;
+  }
+
+  .who-pos {
+    font-family: "Roboto Mono", monospace; font-size: 10.5px;
+    color: var(--steel); margin-top: 1px;
+  }
+
+  /* a chain row: animatable open/close with no JS measurement */
+  .row { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms cubic-bezier(.16,.9,.3,1); }
+  .row.is-in { grid-template-rows: 1fr; }
+  .row > .row-inner { overflow: hidden; min-height: 0; }
+
+  .seg { padding: 7px 0 7px 26px; position: relative; min-height: 42px; display: flex; align-items: center; gap: 9px; }
+
+  /* the rail: one continuous line down the drive, tinted per segment */
+  .seg::before {
+    content: ""; position: absolute; left: 10px; top: 0; bottom: 0;
+    width: 3px; background: var(--seg-c, var(--line)); border-radius: 2px;
+  }
+
+  .seg.is-open::before {
+    background: repeating-linear-gradient(to bottom, var(--dim) 0 5px, transparent 5px 11px);
+  }
+
+  .chip {
+    font-family: "Anton", Impact, sans-serif; font-size: 12px; line-height: 1;
+    letter-spacing: .06em; padding: 6px 8px 5px; border-radius: 2px;
+    background: var(--seg-c, var(--line)); color: var(--seg-ink, #fff);
+    flex: 0 0 auto;
+  }
+
+  .seg-txt { font-size: 12.5px; color: var(--steel); }
+  .seg-txt b { color: var(--chalk); font-weight: 600; }
+  .seg-yrs { font-family: "Roboto Mono", monospace; font-size: 11px; color: var(--dim); }
+
+  .plate {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 15px; border-radius: 3px;
+    background: var(--pitch-3); border: 1px solid var(--line);
+  }
+
+  /* ghost socket: par made visible before you start, like Wordle's 5 tiles */
+  .socket {
+    padding: 12px 15px; border-radius: 3px;
+    border: 1px dashed var(--line); background: transparent;
+    font-family: "Roboto Mono", monospace; font-size: 11.5px;
+    color: var(--dim); letter-spacing: .1em; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .socket.is-next { border-color: var(--marker); color: var(--marker); animation: breathe 1.9s ease-in-out infinite; }
+
+  @keyframes breathe { 0%,100% { opacity: .55; } 50% { opacity: 1; } }
+
+  /* the first-down marker that advances on every good link */
+  .marker-line {
+    height: 3px; background: var(--marker); border-radius: 2px;
+    margin: 3px 0; box-shadow: 0 0 14px rgba(255,212,0,.5);
+    transform-origin: left center;
+  }
+
+  .marker-line.advance { animation: advance 380ms cubic-bezier(.34,1.2,.4,1); }
+
+  @keyframes advance {
+    0%   { transform: scaleX(.15); opacity: .5; }
+    100% { transform: scaleX(1); opacity: 1; }
+  }
+
+  .plate.is-new { animation: land 300ms cubic-bezier(.16,.9,.3,1); }
+
+  @keyframes land {
+    0%   { opacity: 0; transform: translateY(-9px) scale(.97); }
+    100% { opacity: 1; transform: none; }
+  }
+
+  .chip.is-new { animation: stamp 260ms cubic-bezier(.2,1.35,.4,1) 60ms backwards; }
+
+  @keyframes stamp {
+    0%   { opacity: 0; transform: scale(1.28) rotate(-3deg); }
+    100% { opacity: 1; transform: none; }
+  }
+
+  /* sweep that runs the finished chain top to bottom before the win card */
+  .plate.sweep, .zone.sweep { animation: sweep 340ms ease-out backwards; }
+
+  @keyframes sweep {
+    0%   { transform: none; box-shadow: 0 0 0 0 rgba(255,212,0,0); }
+    45%  { transform: scale(1.035); box-shadow: 0 0 0 2px rgba(255,212,0,.75); }
+    100% { transform: none; box-shadow: 0 0 0 0 rgba(255,212,0,0); }
+  }
+
+  /* --------------------------------------------------------------- downs -- */
+  .downbar { display: flex; align-items: center; gap: 9px; }
+
+  .downs { display: flex; gap: 4px; }
+
+  .pip {
+    width: 15px; height: 15px; border-radius: 2px;
+    background: var(--marker); border: 1px solid var(--marker);
+  }
+
+  .pip.spent { background: transparent; border-color: var(--line); }
+  .pip.losing { animation: burn 220ms ease-in forwards; }
+
+  @keyframes burn {
+    0%   { background: var(--flag); border-color: var(--flag); transform: scale(1.15); }
+    100% { background: transparent; border-color: var(--line); transform: scale(.86); }
+  }
+
+  .downs-k { font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+
+  /* --------------------------------------------------------------- input -- */
+  .fakeinput {
+    width: 100%; font: inherit; font-size: 15px; color: var(--chalk);
+    background: var(--pitch); border: 1px solid var(--line);
+    border-radius: 3px; padding: 12px 13px; margin-top: 14px;
+  }
+
+  .fakeinput.bad { border-color: var(--flag); animation: shake 340ms cubic-bezier(.36,.07,.19,.97); }
+
+  @keyframes shake {
+    15% { transform: translateX(-6px); }
+    35% { transform: translateX(5px); }
+    55% { transform: translateX(-3px); }
+    75% { transform: translateX(2px); }
+    100%{ transform: none; }
+  }
+
+  .verdict { min-height: 22px; margin-top: 9px; font-size: 13px; }
+  .verdict.bad  { color: var(--flag); }
+  .verdict.good { color: var(--good); }
+  .verdict b { font-family: "Anton", Impact, sans-serif; font-size: 15px; letter-spacing: .06em; margin-right: 6px; }
+
+  /* penalty flag toss */
+  .pflag {
+    position: absolute; width: 15px; height: 15px; background: var(--marker);
+    border-radius: 2px; pointer-events: none; z-index: 5;
+    animation: toss 460ms cubic-bezier(.3,.7,.4,1) forwards;
+  }
+
+  @keyframes toss {
+    0%   { opacity: 0; transform: translate(40px, -26px) rotate(0deg) scale(.7); }
+    25%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-12px, 34px) rotate(220deg) scale(1); }
+  }
+
+  /* ----------------------------------------------------------------- win -- */
+  .wincard {
+    text-align: center; padding: 26px 18px 22px;
+    background: var(--pitch-3); border-top: 4px solid var(--marker); border-radius: 3px;
+  }
+
+  .win-title {
+    font-family: "Anton", Impact, sans-serif;
+    font-size: clamp(40px, 11vw, 66px); line-height: .9;
+    text-transform: uppercase; color: var(--marker);
+    animation: slam 520ms cubic-bezier(.18,1.35,.35,1);
+  }
+
+  @keyframes slam {
+    0%   { opacity: 0; transform: scale(1.4); letter-spacing: .28em; }
+    55%  { opacity: 1; }
+    100% { opacity: 1; transform: scale(1); letter-spacing: .01em; }
+  }
+
+  .win-sub {
+    display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+    margin-top: 12px; font-size: 11.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--steel);
+  }
+
+  .win-sub b {
+    font-family: "Anton", Impact, sans-serif; font-size: 22px;
+    font-weight: 400; color: var(--chalk); margin-right: 3px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 90; }
+
+  /* --------------------------------------------------------------- share -- */
+  .share {
+    font-family: "Roboto Mono", monospace; font-size: 13.5px; line-height: 1.75;
+    white-space: pre-wrap; background: var(--pitch); border: 1px solid var(--line);
+    border-radius: 3px; padding: 15px 16px; color: var(--chalk);
+  }
+
+  /* ---------------------------------------------------------------- misc -- */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; margin: 18px 0; }
+
+  .sw { border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+  .sw-chip { height: 62px; }
+  .sw-meta { padding: 8px 10px; background: var(--pitch-2); }
+  .sw-name { font-size: 11.5px; font-weight: 600; }
+  .sw-hex { font-family: "Roboto Mono", monospace; font-size: 10.5px; color: var(--steel); }
+  .sw-use { font-size: 10.5px; color: var(--dim); margin-top: 3px; line-height: 1.4; }
+
+  .specimen { border: 1px solid var(--line); border-radius: 3px; padding: 18px; background: var(--pitch-2); margin: 16px 0; }
+  .specimen + .specimen { margin-top: 10px; }
+  .spec-label { font-family: "Roboto Mono", monospace; font-size: 10.5px; color: var(--dim); margin-bottom: 8px; }
+
+  .tablewrap { overflow-x: auto; margin: 18px 0; border: 1px solid var(--line); border-radius: 3px; }
+
+  table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 13px; border-bottom: 1px solid var(--line-2); vertical-align: top; }
+  th { background: var(--pitch-3); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--steel); font-weight: 700; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.sev { white-space: nowrap; }
+
+  .tag {
+    display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; padding: 3px 7px; border-radius: 2px;
+  }
+
+  .tag-high { background: rgba(232,86,47,.16); color: var(--flag); border: 1px solid rgba(232,86,47,.4); }
+  .tag-med  { background: rgba(255,212,0,.13); color: var(--marker); border: 1px solid rgba(255,212,0,.34); }
+  .tag-low  { background: rgba(140,151,143,.12); color: var(--steel); border: 1px solid var(--line); }
+
+  code {
+    font-family: "Roboto Mono", monospace; font-size: 12.5px;
+    background: var(--pitch-2); padding: 1.5px 5px; border-radius: 2px; color: #C9D6CD;
+  }
+
+  pre {
+    font-family: "Roboto Mono", monospace; font-size: 12.5px; line-height: 1.65;
+    background: var(--pitch-2); border: 1px solid var(--line); border-radius: 3px;
+    padding: 14px 16px; overflow-x: auto; color: #C9D6CD; margin: 14px 0;
+  }
+
+  pre .c { color: var(--dim); }
+  pre .k { color: var(--marker); }
+
+  ul { margin: 0 0 14px; padding-left: 20px; max-width: 68ch; }
+  li { margin-bottom: 7px; }
+  li::marker { color: var(--marker); }
+
+  .beats { border: 1px solid var(--line); border-radius: 3px; overflow: hidden; margin: 16px 0; }
+
+  .beat { display: flex; gap: 14px; padding: 10px 14px; border-bottom: 1px solid var(--line-2); font-size: 13.5px; }
+  .beat:last-child { border-bottom: 0; }
+  .beat-t {
+    font-family: "Roboto Mono", monospace; font-size: 11.5px; color: var(--marker);
+    flex: 0 0 84px; padding-top: 2px; font-variant-numeric: tabular-nums;
+  }
+
+  .foot { border-top: 1px solid var(--line); padding-top: 20px; color: var(--dim); font-size: 12.5px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .row { grid-template-rows: 1fr; }
+  }
+
+  @media (max-width: 560px) {
+    .wrap { padding: 28px 15px 60px; }
+    .beat { flex-direction: column; gap: 3px; }
+    .beat-t { flex-basis: auto; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="eyebrow">NFL Connector · Design direction</div>
+    <h1>Moving the Chains</h1>
+    <p class="standfirst">The game is well built and not yet fun. It has no way to lose, and its search box does the remembering for you. Fix those two things and the rest is polish &mdash; here is the polish, with the reasoning attached and <b>the timings live so you can feel them</b>.</p>
+  </header>
+
+  <section>
+    <h2>Diagnosis</h2>
+    <h3>You cannot lose, so winning is not a relief</h3>
+    <p class="lead">Wordle gives you six guesses. Connections gives you four mistakes. Both are generous enough that a competent player almost always wins &mdash; the limit is not really about difficulty, it is about <strong>making the win mean something</strong>. Right now NFL Connector lets you guess forever. Par measures efficiency, but efficiency is not tension: there is no moment where you feel the floor might drop.</p>
+    <p>The second problem is that the search dropdown lists each player's teams. Type four letters and the answer is on screen. That converts the game from <strong>recall</strong> (what do I know about the 2010 Steelers?) into <strong>recognition</strong> (which of these five rows looks right?). Recall is the fun. Recognition is the shortcut that eats it.</p>
+
+    <div class="principle">
+      <span class="principle-k">Principle</span>
+      <p>A daily puzzle needs a failure state it rarely reaches. The limit is not a difficulty knob &mdash; it is what converts a task into a game. Without it you have a form that validates input.</p>
+    </div>
+
+    <h3>The fix already lives in the sport</h3>
+    <p>You get <strong>four downs</strong>. Every wrong guess costs one. Convert a link and the chains move &mdash; downs reset to four. Burn all four on the same link and it is a turnover on downs. This is not a metaphor bolted on; it is the actual scoring structure of the sport the game is about, and every NFL fan already knows the rules. "Moving the chains" is literally what the player is doing.</p>
+
+    <div class="principle">
+      <span class="principle-k">Principle</span>
+      <p>When a mechanic can be borrowed from the subject itself, take it. A borrowed mechanic needs no tutorial, and it makes the game feel authored rather than templated.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>1 · Moment-to-moment feel</h2>
+    <h3>The board, live</h3>
+    <p>Play with it. Convert links, miss on purpose, watch the marker advance and the downs burn. Every timing below is the real specification.</p>
+
+    <div class="demo">
+      <div class="demo-head">
+        <span class="demo-title">The drive</span>
+        <div class="downbar">
+          <span class="downs-k">Down</span>
+          <div class="downs" id="downs"></div>
+        </div>
+      </div>
+      <div class="demo-body">
+        <div class="board" id="board"></div>
+        <div style="max-width:430px;margin:0 auto;position:relative">
+          <input class="fakeinput" id="guess" value="Hines Ward" readonly aria-label="Guess (demo)">
+          <div class="verdict" id="verdict"></div>
+        </div>
+      </div>
+      <div class="demo-foot">
+        <button class="btn btn-key" id="do-good">Convert a link</button>
+        <button class="btn btn-bad" id="do-bad">Miss</button>
+        <button class="btn" id="do-reset">Reset drive</button>
+      </div>
+    </div>
+
+    <h3>Correct guess &mdash; 400ms, and it settles</h3>
+    <div class="beats">
+      <div class="beat"><span class="beat-t">0ms</span><span>Input locks and clears. The guess is gone before the player can second-guess it.</span></div>
+      <div class="beat"><span class="beat-t">0&ndash;300ms</span><span>Nameplate lands: <code>opacity 0&rarr;1</code>, <code>translateY(-9px)&rarr;0</code>, <code>scale(.97)&rarr;1</code>, <code>cubic-bezier(.16,.9,.3,1)</code>.</span></div>
+      <div class="beat"><span class="beat-t">60&ndash;320ms</span><span>Team chip stamps in at <code>scale(1.28) rotate(-3deg)</code> &rarr; rest, <code>cubic-bezier(.2,1.35,.4,1)</code>. The overshoot is the point.</span></div>
+      <div class="beat"><span class="beat-t">140&ndash;520ms</span><span>First-down marker sweeps: <code>scaleX(.15)&rarr;1</code> from the left, <code>cubic-bezier(.34,1.2,.4,1)</code>.</span></div>
+      <div class="beat"><span class="beat-t">250ms</span><span><code>navigator.vibrate(12)</code> and a 60ms synthesised click.</span></div>
+      <div class="beat"><span class="beat-t">400ms</span><span>Input re-enables and refocuses. Never later &mdash; a fast player is already typing.</span></div>
+    </div>
+
+    <p>Two easing choices carry the whole feel. <strong>Overshoot reads as mass.</strong> A plain ease-out says "the interface updated"; a curve that goes past its target and settles says "an object was thrown and landed". That is the difference between using an app and doing something. And <strong>fast attack, slow settle</strong>: the element should arrive almost instantly and then take its time coming to rest.</p>
+
+    <h3>Wrong guess &mdash; 340ms, sharp, and then gone</h3>
+    <div class="beats">
+      <div class="beat"><span class="beat-t">0ms</span><span>Border to flag orange. Shake with <em>decaying</em> amplitude: 6px, 5px, 3px, 2px over 340ms, <code>cubic-bezier(.36,.07,.19,.97)</code>. Even oscillation reads as a broken widget; decay reads as impact.</span></div>
+      <div class="beat"><span class="beat-t">0&ndash;460ms</span><span>A penalty flag arcs in from upper right, tumbling <code>rotate(0&rarr;220deg)</code>, and fades on landing.</span></div>
+      <div class="beat"><span class="beat-t">60&ndash;280ms</span><span>One down pip flashes flag orange, then drains to empty at <code>scale(.86)</code>.</span></div>
+      <div class="beat"><span class="beat-t">80ms</span><span><code>navigator.vibrate([8,40,8])</code> &mdash; a double pulse reads as negative where a single reads as positive.</span></div>
+      <div class="beat"><span class="beat-t">after</span><span>The wrong text <strong>stays in the box, selected</strong>. Retyping a near-miss is the most avoidable friction in the game.</span></div>
+    </div>
+
+    <div class="principle">
+      <span class="principle-k">Principle</span>
+      <p>Success animations may linger; failure animations must not. Make the player sit through their own mistake and they disengage. Sharp attack, sharp decay, out of the way &mdash; then let them move.</p>
+    </div>
+
+    <h3>Sound: ship it muted, but ship it</h3>
+    <p>Sound is the cheapest large gain in perceived polish and the fastest way to get a tab closed. Both are true, so: <strong>muted by default, one persistent toggle, three sounds only.</strong> Convert = a dry 60ms click. Miss = a soft low thud, never a buzzer &mdash; buzzers feel like punishment and punishment is not fun at 8am. Win = a three-note ascending stab.</p>
+    <p>Note the constraint your artifact runtime imposes: <strong>the CSP blocks external audio files</strong>, and base64 audio would bloat a page that already carries 1.2MB of roster data. Synthesise with WebAudio &mdash; zero payload, and it is about fifteen lines.</p>
+    <pre><span class="c">// convert: dry click. miss: low thud. win: ascending stab.</span>
+<span class="k">function</span> blip(freq, ms, type, gain) {
+  <span class="k">const</span> ac = window.__ac || (window.__ac = <span class="k">new</span> AudioContext());
+  <span class="k">const</span> o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(gain, ac.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + ms / 1000);
+  o.connect(g).connect(ac.destination);
+  o.start(); o.stop(ac.currentTime + ms / 1000);
+}
+convert = () =&gt; blip(880, 60, <span class="k">'square'</span>, .05);
+miss    = () =&gt; blip(150, 140, <span class="k">'sine'</span>,  .08);
+win     = () =&gt; [523, 659, 784].forEach((f, i) =&gt;
+            setTimeout(() =&gt; blip(f, 180, <span class="k">'triangle'</span>, .06), i * 110));</pre>
+  </section>
+
+  <section>
+    <h2>2 · Visual identity</h2>
+    <h3>Sunday night broadcast, not sports database</h3>
+    <p>The current palette &mdash; newsprint neutrals, condensed type &mdash; is tasteful and reads as a reference site. It will not stand out as a screenshot in a group chat, which is where this game lives or dies.</p>
+    <p>The proposal is the <strong>broadcast graphics language</strong>: the scorebug, the chain gang, and above all the yellow first-down line &mdash; the most recognisable graphic in American sport, owned by no team, and unmistakably NFL without touching a single piece of league IP. Dark ground, because broadcast graphics live on dark and because a dark card is conspicuous in a feed of light ones.</p>
+
+    <div class="swatches">
+      <div class="sw"><div class="sw-chip" style="background:#0A0F0D;border-bottom:1px solid #243029"></div><div class="sw-meta"><div class="sw-name">Pitch</div><div class="sw-hex">#0A0F0D</div><div class="sw-use">Ground. Near-black, biased green.</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#18221D"></div><div class="sw-meta"><div class="sw-name">Pitch 3</div><div class="sw-hex">#18221D</div><div class="sw-use">Nameplates, raised surfaces.</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#FFD400"></div><div class="sw-meta"><div class="sw-name">Marker</div><div class="sw-hex">#FFD400</div><div class="sw-use"><b>The brand.</b> First-down line and the win. Nothing else.</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#2E7FE8"></div><div class="sw-meta"><div class="sw-name">Scrimmage</div><div class="sw-hex">#2E7FE8</div><div class="sw-use">Where the drive starts.</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#E8562F"></div><div class="sw-meta"><div class="sw-name">Flag</div><div class="sw-hex">#E8562F</div><div class="sw-use">Misses and spent downs only.</div></div></div>
+      <div class="sw"><div class="sw-chip" style="background:#F4F7F2"></div><div class="sw-meta"><div class="sw-name">Chalk</div><div class="sw-hex">#F4F7F2</div><div class="sw-use">Type. The painted lines.</div></div></div>
+    </div>
+
+    <p><strong>One saturated colour, spent in one place.</strong> Everything except the marker is desaturated. Wordle owns green, Connections owns purple; this game should own broadcast yellow, and it only earns that if yellow never appears on a button, a border, or a heading that is not about progress.</p>
+    <p>Team colours are the exception, and they are the good kind: they are <em>data</em>. The page's colour comes from the teams your chain routed through, so no two finished puzzles look alike.</p>
+
+    <div class="specimen">
+      <div class="spec-label">Display — Anton. Win states, big numbers, section eyebrows.</div>
+      <div style="font-family:Anton,Impact,sans-serif;font-size:46px;line-height:.95;text-transform:uppercase">First down<br>Touchdown</div>
+    </div>
+    <div class="specimen">
+      <div class="spec-label">Nameplates — Archivo 700, uppercase, -0.01em tracking.</div>
+      <div style="font-weight:700;font-size:21px;text-transform:uppercase;letter-spacing:-.01em">Ben Roethlisberger &middot; Antonio Brown</div>
+    </div>
+    <div class="specimen">
+      <div class="spec-label">Data — Roboto Mono. Seasons, stats, the share block.</div>
+      <div style="font-family:'Roboto Mono',monospace;font-size:14px">PIT 2010–2018 &nbsp; par 2 &nbsp; 4 downs</div>
+    </div>
+
+    <p class="muted">Anton over Bebas Neue deliberately: Bebas is the default condensed face of the web and reads as a template. Anton is heavier, rarer, and closer to a jersey number.</p>
+
+    <p><strong>No icon library.</strong> Every mark should be a football object drawn in CSS or SVG: four squares for the down box, a 3px yellow rule for the first-down line, interlocking rounded rects for a chain link. Borrowed iconography is where sports apps start looking like every other app.</p>
+  </section>
+
+  <section>
+    <h2>3 · The chain as a board</h2>
+    <h3>A drive chart, not a list</h3>
+    <p>The current chain is a stack of cards. It reads as a <em>form</em> &mdash; fill this, then fill that. The demo above is the redesign, and four things change:</p>
+    <ul>
+      <li><strong>The endpoints are zones, not cards.</strong> Start and target get full-bleed tinted bands with their own tags; your links get plain plates. One glance tells you what is fixed and what is yours.</li>
+      <li><strong>One continuous rail runs the whole drive</strong>, tinted per segment by the team that made the connection. A finished puzzle becomes a stripe of team colours &mdash; the thing worth screenshotting.</li>
+      <li><strong>Par is shown as empty sockets.</strong> Wordle shows five blank tiles before you type; you know the shape of the answer. Two dashed sockets do the same job here, and the next one pulses. Filling a socket is more satisfying than appending to a list because a socket is a question already asked.</li>
+      <li><strong>The first-down marker advances</strong> down the board on every conversion. It is the one element whose only job is to say <em>you moved</em>.</li>
+    </ul>
+
+    <div class="principle">
+      <span class="principle-k">Principle</span>
+      <p>Give progress a physical object that moves. A counter incrementing is information; a marker travelling down a field is an event. Players remember events.</p>
+    </div>
+
+    <p>Growing the board without measuring heights in JS &mdash; the <code>grid-template-rows</code> trick animates to intrinsic height, which <code>max-height</code> hacks never do cleanly:</p>
+    <pre>.row       { display: grid; grid-template-rows: 0fr;
+             transition: grid-template-rows 320ms cubic-bezier(.16,.9,.3,1); }
+.row.is-in { grid-template-rows: 1fr; }
+.row &gt; div { overflow: hidden; min-height: 0; }   <span class="c">/* both required */</span></pre>
+
+    <p>Component structure to hand over:</p>
+    <pre>&lt;Board&gt;
+  &lt;Zone kind="start"  player /&gt;        <span class="c">// blue band, START tag</span>
+  &lt;Row&gt;                                <span class="c">// repeats, animates open</span>
+    &lt;Segment team season /&gt;            <span class="c">// tinted rail + chip</span>
+    &lt;Plate player /&gt;
+  &lt;/Row&gt;
+  &lt;Socket state="next|pending" /&gt;      <span class="c">// one per remaining par link</span>
+  &lt;MarkerLine /&gt;                       <span class="c">// advances on convert</span>
+  &lt;Zone kind="end" player /&gt;           <span class="c">// yellow band, TARGET tag</span>
+&lt;/Board&gt;
+&lt;DownBox downs={0..4} /&gt;
+&lt;GuessInput state="idle|locked|bad" /&gt;</pre>
+  </section>
+
+  <section>
+    <h2>4 · The share</h2>
+    <h3>Your current share spoils the puzzle</h3>
+    <p>It prints both players' names. Anyone who reads it in a group chat before playing has had the puzzle handed to them, so the people most likely to see your result are the ones it ruins. Wordle's grid is the canonical solution: it conveys the entire experience and leaks nothing.</p>
+
+    <div class="demo">
+      <div class="demo-head"><span class="demo-title">Generated from the demo above &mdash; play it and watch this change</span></div>
+      <div class="demo-body"><div class="share" id="sharebox"></div></div>
+    </div>
+
+    <p>Reading left to right it is a drive: <span style="color:var(--scrimmage)">&#128309;</span> start, one square per link, <span style="color:var(--marker)">&#128993;</span> target. Green squares are links converted on the first try, yellow ones took a miss. Length shows efficiency, colour shows cleanliness, and no name or team ever appears.</p>
+    <ul>
+      <li><strong>Number the puzzles, do not date them.</strong> "#142" implies a series with history and is easier to compare than a date. Wordle did this deliberately.</li>
+      <li><strong>Make perfection visibly rare.</strong> Par, no misses, no hints swaps every square for &#127944;. A marker that only shows up occasionally is something to chase &mdash; scarcity in the share is the aspiration.</li>
+      <li><strong>Use <code>navigator.share()</code> on mobile</strong> with clipboard as fallback. The native sheet roughly doubles completed shares versus copy-then-paste.</li>
+    </ul>
+
+    <div class="principle">
+      <span class="principle-k">Principle</span>
+      <p>A share has three jobs: spoil nothing, be recognisable at a glance while scrolling, and invite comparison. Plain numbers fail the second &mdash; text does not catch the eye in a feed. That is why the grid, not the score, is what made Wordle spread.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>5 · Ritual &amp; retention</h2>
+    <h3>Five things, and nothing else</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Mechanic</th><th>Minimum version</th><th>Why it works</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Countdown</strong></td><td>"Next drive in 07:42:19", ticking, on the win card.</td><td>Turns "come back tomorrow" into an appointment with a time on it. Highest return for the least code, and it is information rather than a nag.</td></tr>
+          <tr><td><strong>Streak + bye week</strong></td><td>Current and best streak. One miss per week does not break it.</td><td>A broken streak is the top cause of permanent churn &mdash; the sunk value vanishes and so does the player. Forgiveness keeps them without manipulating them, and "bye week" is the sport's own word for it.</td></tr>
+          <tr><td><strong>Four stats</strong></td><td>Played, win %, streak, par rate. One small bar chart of links over par.</td><td>Stats pages are where daily games bloat. Wordle has four numbers and one histogram. More slows the post-win moment, which is the moment you want to end on a high.</td></tr>
+          <tr><td><strong>One puzzle a day</strong></td><td>No playing ahead. Free play is framed as practice and excluded from stats.</td><td>Scarcity is the entire engine of the genre. If unlimited play counts for anything, the daily stops being an occasion and the ritual collapses.</td></tr>
+          <tr><td><strong>No archive yet</strong></td><td>Ship without it.</td><td>An archive converts a 30-day retention curve into one long session followed by churn. Add it only once daily retention is proven.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="principle">
+      <span class="principle-k">Principle</span>
+      <p>For a daily game the product is the ritual, not the session. Optimise for "came back tomorrow" and never for "stayed longer today" &mdash; which inverts most engagement design, and is exactly why the genre feels good to play.</p>
+    </div>
+
+    <p>The line you asked about &mdash; where retention becomes manipulation &mdash; is worth naming: no push nags, no "your streak dies in 2 hours", no coins or XP, no leaderboard by default. The genre's whole appeal is that it respects your time and lets you go. Anything designed to extend a session works against the brand.</p>
+  </section>
+
+  <section>
+    <h2>6 · Friction audit</h2>
+    <h3>What a two-minute player will not tolerate</h3>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Friction</th><th class="sev">Severity</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Dropdown lists every player's teams</strong>, including on hard. Type four letters and browse to the answer.</td><td class="sev"><span class="tag tag-high">Critical</span></td><td>Show name, position and career span only. Span disambiguates the several Chris Joneses without naming a single team.</td></tr>
+          <tr><td><strong>No guess limit.</strong> Nothing is at stake.</td><td class="sev"><span class="tag tag-high">Critical</span></td><td>Four downs per link. Reset on conversion.</td></tr>
+          <tr><td><strong>Enter's target is invisible.</strong> <code>activeResult</code> starts at −1, so the first result is not highlighted, and pressing Enter does something the player could not predict.</td><td class="sev"><span class="tag tag-high">High</span></td><td>Auto-highlight row 0 on every keystroke. Enter should always have a visible target.</td></tr>
+          <tr><td><strong>1.2MB parsed before first paint</strong>, behind the words "Loading rosters…".</td><td class="sev"><span class="tag tag-high">High</span></td><td>Paint the board shell instantly and parse after; or ship a small famous-player index for search and lazy-load the tail. At minimum a board-shaped skeleton, not a sentence.</td></tr>
+          <tr><td><strong>Wrong guess clears the input.</strong> A near-miss has to be retyped in full.</td><td class="sev"><span class="tag tag-med">Medium</span></td><td>Keep the text and select it.</td></tr>
+          <tr><td><strong>Error copy is a sentence.</strong> "X never shared a roster with Y" &mdash; two names to parse for one bit of information.</td><td class="sev"><span class="tag tag-med">Medium</span></td><td>Big <strong>NO GOOD</strong>, the down burning, detail underneath in small type.</td></tr>
+          <tr><td><strong>Give up sits beside Hint at equal weight</strong>, framing quitting as a normal move.</td><td class="sev"><span class="tag tag-med">Medium</span></td><td>Demote it behind an overflow or a confirm. You get the behaviour you make easy.</td></tr>
+          <tr><td><strong>No first-run explanation.</strong> New players get two names and a text box; the rules are in a collapsed accordion below the fold.</td><td class="sev"><span class="tag tag-med">Medium</span></td><td>One-time overlay: three lines and a worked example. The genre spreads by word of mouth and a confused first-timer does not share.</td></tr>
+          <tr><td><strong>Undo exists alongside a mistake budget</strong> &mdash; incoherent once downs matter.</td><td class="sev"><span class="tag tag-low">Low</span></td><td>Remove from daily, keep for free play.</td></tr>
+          <tr><td><strong>"Change" buttons sit in the play surface</strong> during free play.</td><td class="sev"><span class="tag tag-low">Low</span></td><td>Move endpoint selection into a setup state behind "New drive".</td></tr>
+          <tr><td><strong>Daily and free play look identical</strong>, so the daily has no sense of occasion.</td><td class="sev"><span class="tag tag-low">Low</span></td><td>Give the daily a puzzle number, the date, and the countdown. Ritual needs ceremony.</td></tr>
+          <tr><td><strong>Mobile drops the disambiguation.</strong> <code>.result-teams</code> is hidden under 460px &mdash; exactly where most people will play.</td><td class="sev"><span class="tag tag-low">Low</span></td><td>Keep the span on mobile; drop the position chip instead.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Sequence</h2>
+    <h3>If you only do three things</h3>
+    <p><strong>Four downs</strong> makes it a game. <strong>Hiding teams in the dropdown</strong> makes it a memory game. <strong>The share grid without names</strong> makes it spread. Everything above this line is worth doing; those three are why it would be worth someone's Tuesday morning.</p>
+  </section>
+
+  <p class="foot">Design direction for NFL Connector · every animation on this page runs at the specified timing.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var PAR = 2;
+  var CHAIN = [
+    { name: "Ahman Green",     pos: "RB", team: "GB",  ink: "#fff",    yrs: "2000–2004", c: "#28553F" },
+    { name: "Charles Woodson", pos: "CB", team: "OAK", ink: "#fff",    yrs: "2015",      c: "#4A4A4A" },
+    { name: "Hines Ward",      pos: "WR", team: "PIT", ink: "#0A0F0D", yrs: "2001–2011", c: "#C9A227" }
+  ];
+
+  var links = [], downs = 4, misses = [], perLink = 0, over = 0, won = false;
+
+  var boardEl   = document.getElementById("board");
+  var downsEl   = document.getElementById("downs");
+  var verdictEl = document.getElementById("verdict");
+  var inputEl   = document.getElementById("guess");
+  var shareEl   = document.getElementById("sharebox");
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function renderDowns(losing) {
+    var h = "";
+    for (var i = 0; i < 4; i++) {
+      var spent = i >= downs;
+      var cls = "pip" + (spent ? " spent" : "");
+      if (losing && i === downs) cls = "pip losing";
+      h += '<span class="' + cls + '"></span>';
+    }
+    downsEl.innerHTML = h;
+  }
+
+  function renderBoard(fresh) {
+    var h = "";
+    h += '<div class="zone zone-start"><span class="zone-tag">Start</span>' +
+         '<div class="who"><div class="who-name">Darren Sharper</div>' +
+         '<div class="who-pos">FS · 4 teams</div></div></div>';
+
+    for (var i = 0; i < links.length; i++) {
+      var L = links[i];
+      var isNew = fresh && i === links.length - 1;
+      h += '<div class="row' + (isNew ? "" : " is-in") + '" data-row="' + i + '"><div class="row-inner">' +
+        '<div class="seg" style="--seg-c:' + L.c + ';--seg-ink:' + L.ink + '">' +
+          '<span class="chip' + (isNew ? " is-new" : "") + '" style="--seg-c:' + L.c + ';--seg-ink:' + L.ink + '">' +
+            esc(L.team) + "</span>" +
+          '<span class="seg-txt">shared a roster <span class="seg-yrs">' + esc(L.yrs) + "</span></span>" +
+        "</div>" +
+        '<div class="plate' + (isNew ? " is-new" : "") + '">' +
+          '<div class="who"><div class="who-name">' + esc(L.name) + "</div>" +
+          '<div class="who-pos">' + esc(L.pos) + "</div></div></div>" +
+      "</div></div>";
+    }
+
+    if (!won) {
+      var remaining = Math.max(PAR - links.length, 0);
+      for (var s = 0; s < remaining; s++) {
+        h += '<div class="socket' + (s === 0 ? " is-next" : "") + '">' +
+          "<span>" + (s === 0 ? "your move" : "link " + (links.length + s + 1)) + "</span>" +
+          "<span>?</span></div>";
+      }
+      h += '<div class="marker-line' + (fresh ? " advance" : "") + '"></div>';
+    }
+
+    h += '<div class="zone zone-end"><span class="zone-tag">Target</span>' +
+         '<div class="who"><div class="who-name">Amari Cooper</div>' +
+         '<div class="who-pos">WR · 5 teams</div></div></div>';
+
+    boardEl.innerHTML = h;
+
+    if (fresh) {
+      var row = boardEl.querySelector('[data-row="' + (links.length - 1) + '"]');
+      if (row) requestAnimationFrame(function () { row.classList.add("is-in"); });
+    }
+  }
+
+  function shareGrid() {
+    var n = "#142";
+    var strip = "🔵";                       // start
+    var clean = misses.every(function (m) { return m === 0; });
+    for (var i = 0; i < links.length; i++) {
+      if (!won && i >= links.length) break;
+      var perfect = clean && links.length === PAR;
+      strip += perfect ? "🏈" : (misses[i] ? "🟨" : "🟩");
+    }
+    if (won) strip += "🟡";                 // target reached
+    var flags = misses.reduce(function (a, b) { return a + b; }, 0);
+    var out = "NFL Connector " + n + "\n" + strip;
+    if (won) {
+      out += "\n" + links.length + " links · par " + PAR +
+             " · 🚩" + flags + "\n🔥 7";
+    } else {
+      out += "\n" + links.length + "/" + PAR + " · 🚩" + flags + " · in progress";
+    }
+    return out;
+  }
+
+  function paintShare() { shareEl.textContent = shareGrid(); }
+
+  function blip(freq, ms, type, gain) {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      var ac = window.__demoAc || (window.__demoAc = new AC());
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(gain, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + ms / 1000);
+      o.connect(g); g.connect(ac.destination);
+      o.start(); o.stop(ac.currentTime + ms / 1000);
+    } catch (e) {}
+  }
+
+  function setVerdict(text, kind) {
+    verdictEl.className = "verdict" + (kind ? " " + kind : "");
+    verdictEl.innerHTML = text;
+  }
+
+  function convert() {
+    if (won) return;
+    var L = CHAIN[links.length];
+    if (!L) return;
+    links.push(L);
+    misses.push(perLink);
+    perLink = 0;
+    downs = 4;
+    if (links.length > PAR) over++;
+
+    inputEl.value = "";
+    renderBoard(true);
+    renderDowns(false);
+    blip(880, 60, "square", .05);
+    if (navigator.vibrate) navigator.vibrate(12);
+
+    var atTarget = links.length >= PAR;
+    if (atTarget) {
+      won = true;
+      setTimeout(finish, 260);
+    } else {
+      setVerdict("<b>FIRST DOWN</b> chains move &mdash; four fresh downs.", "good");
+    }
+    paintShare();
+  }
+
+  function miss() {
+    if (won || downs <= 0) return;
+    downs--;
+    perLink++;
+    renderDowns(true);
+    blip(150, 140, "sine", .08);
+    if (navigator.vibrate) navigator.vibrate([8, 40, 8]);
+
+    inputEl.classList.remove("bad");
+    void inputEl.offsetWidth;                 // restart the animation
+    inputEl.classList.add("bad");
+    inputEl.value = "Hines Ward";
+    try { inputEl.setSelectionRange(0, inputEl.value.length); } catch (e) {}
+
+    var host = inputEl.parentNode;
+    var flag = document.createElement("span");
+    flag.className = "pflag";
+    flag.style.right = "18px";
+    flag.style.top = "16px";
+    host.appendChild(flag);
+    setTimeout(function () { flag.remove(); }, 480);
+
+    if (downs === 0) {
+      setVerdict("<b>TURNOVER</b> on downs. The drive is over.", "bad");
+    } else {
+      setVerdict("<b>NO GOOD</b> never shared a roster &mdash; " + downs +
+                 " down" + (downs === 1 ? "" : "s") + " left.", "bad");
+    }
+    paintShare();
+  }
+
+  function finish() {
+    var nodes = boardEl.querySelectorAll(".plate, .zone");
+    for (var i = 0; i < nodes.length; i++) {
+      (function (el, d) {
+        el.style.animationDelay = d + "ms";
+        el.classList.add("sweep");
+      })(nodes[i], i * 60);
+    }
+
+    setTimeout(function () {
+      var clean = misses.every(function (m) { return m === 0; });
+      var card = document.createElement("div");
+      card.className = "wincard";
+      card.innerHTML =
+        '<div class="win-title">' + (clean ? "Touchdown" : "Chain complete") + "</div>" +
+        '<div class="win-sub"><span><b>' + links.length + "</b>links</span>" +
+        "<span><b>" + PAR + "</b>par</span>" +
+        "<span><b>" + misses.reduce(function (a, b) { return a + b; }, 0) + "</b>flags</span></div>";
+      boardEl.appendChild(card);
+      confetti(CHAIN.slice(0, links.length).map(function (l) { return l.c; }).concat(["#FFD400"]));
+      blip(523, 180, "triangle", .06);
+      setTimeout(function () { blip(659, 180, "triangle", .06); }, 110);
+      setTimeout(function () { blip(784, 220, "triangle", .06); }, 220);
+      setVerdict("<b>DRIVE COMPLETE</b> share card generated below.", "good");
+    }, nodes.length * 60 + 120);
+  }
+
+  function confetti(colors) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var old = document.getElementById("confetti");
+    if (old) old.remove();
+    var cv = document.createElement("canvas");
+    cv.id = "confetti";
+    cv.setAttribute("aria-hidden", "true");
+    document.body.appendChild(cv);
+
+    var ctx = cv.getContext("2d");
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = window.innerWidth, H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var bits = [], n = Math.max(60, Math.min(150, Math.round(W / 7)));
+    for (var i = 0; i < n; i++) {
+      bits.push({
+        x: Math.random() * W, y: -20 - Math.random() * H * .6,
+        vx: (Math.random() - .5) * 1.7, vy: 2.2 + Math.random() * 3.4,
+        w: 5 + Math.random() * 5, h: 8 + Math.random() * 6,
+        rot: Math.random() * Math.PI, vr: (Math.random() - .5) * .24,
+        c: colors[i % colors.length]
+      });
+    }
+    var t0 = performance.now(), DUR = 3000, FADE = 700;
+    function frame(now) {
+      var el = now - t0;
+      if (el > DUR) { cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalAlpha = el > DUR - FADE ? (DUR - el) / FADE : 1;
+      for (var j = 0; j < bits.length; j++) {
+        var b = bits[j];
+        b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.vy += .045;
+        ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+        ctx.fillStyle = b.c; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+        ctx.restore();
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function reset() {
+    links = []; downs = 4; misses = []; perLink = 0; over = 0; won = false;
+    inputEl.value = "Hines Ward";
+    inputEl.classList.remove("bad");
+    renderBoard(false);
+    renderDowns(false);
+    setVerdict("");
+    paintShare();
+  }
+
+  document.getElementById("do-good").addEventListener("click", convert);
+  document.getElementById("do-bad").addEventListener("click", miss);
+  document.getElementById("do-reset").addEventListener("click", reset);
+
+  reset();
+})();
+</script>

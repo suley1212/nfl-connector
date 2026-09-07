@@ -1,737 +1,519 @@
-<title>NFL Connector</title>
+<title>Move The Chains</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Archivo:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap">
 
 <style>
+  /* Committed single-theme: broadcast graphics live on dark, and a dark card
+     stands out in a feed of light ones. Every colour is painted explicitly. */
   :root {
-    color-scheme: light;
-    --field:      #EDEFEC;
-    --surface:    #FFFFFF;
-    --raise:      #F5F7F4;
-    --chalk:      #13181A;
-    --muted:      #5C6662;
-    --faint:      #8B948F;
-    --line:       #CFD5D0;
-    --line-soft:  #E2E6E1;
-    --scrimmage:  #2C6FB5;
-    --marker:     #B8880A;
-    --good:       #1D7A45;
-    --flag:       #BE3A2B;
-    --shadow:     0 1px 2px rgba(20,28,24,.06), 0 6px 18px rgba(20,28,24,.07);
-    --plate-r:    3px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --field:     #0E1417;
-      --surface:   #161D21;
-      --raise:     #1C242A;
-      --chalk:     #E7ECE8;
-      --muted:     #97A19C;
-      --faint:     #6B7671;
-      --line:      #2A343A;
-      --line-soft: #212A30;
-      --scrimmage: #6BA6E0;
-      --marker:    #F2C230;
-      --good:      #4FBE7C;
-      --flag:      #E0685A;
-      --shadow:    0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
-    }
-  }
-  :root[data-theme="dark"] {
     color-scheme: dark;
-    --field:     #0E1417;
-    --surface:   #161D21;
-    --raise:     #1C242A;
-    --chalk:     #E7ECE8;
-    --muted:     #97A19C;
-    --faint:     #6B7671;
-    --line:      #2A343A;
-    --line-soft: #212A30;
-    --scrimmage: #6BA6E0;
-    --marker:    #F2C230;
-    --good:      #4FBE7C;
-    --flag:      #E0685A;
-    --shadow:    0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    --pitch:     #0A0F0D;
+    --pitch-2:   #121A16;
+    --pitch-3:   #18221D;
+    --line:      #243029;
+    --line-2:    #1B241F;
+    --chalk:     #F4F7F2;
+    --steel:     #8C978F;
+    --dim:       #5E6A63;
+    --marker:    #FFD400;
+    --scrimmage: #2E7FE8;
+    --flag:      #E8562F;
+    --good:      #35C46B;
   }
 
   * { box-sizing: border-box; }
 
   body {
-    background: var(--field);
+    background: var(--pitch);
     color: var(--chalk);
-    font-family: "Archivo", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-family: "Archivo", system-ui, -apple-system, sans-serif;
     font-size: 15px;
-    line-height: 1.5;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
   }
 
   .wrap {
-    max-width: 620px;
+    max-width: 560px;
     margin: 0 auto;
-    padding: 28px 20px 72px;
+    padding: 26px 18px 80px;
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    gap: 18px;
   }
 
-  /* ---------------------------------------------------------- masthead -- */
+  /* ------------------------------------------------------------ masthead -- */
   .masthead { display: flex; flex-direction: column; gap: 12px; }
 
-  .brandline { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .brandrow { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 
   h1 {
-    font-family: "Bebas Neue", "Archivo Narrow", Impact, sans-serif;
-    font-size: clamp(38px, 9vw, 54px);
-    line-height: .88;
-    letter-spacing: .01em;
-    margin: 0;
-    text-wrap: balance;
-  }
-
-  .tagline {
-    color: var(--muted);
-    font-size: 14px;
-    max-width: 46ch;
+    font-family: "Anton", Impact, sans-serif;
+    font-size: clamp(31px, 8.4vw, 45px);
+    line-height: .9;
+    letter-spacing: .008em;
+    text-transform: uppercase;
     margin: 0;
   }
 
-  .tagline b { color: var(--chalk); font-weight: 600; }
+  h1 .accent { color: var(--marker); }
+
+  .tagline { color: var(--steel); font-size: 13.5px; margin: 0; max-width: 44ch; }
+
+  .icobtn {
+    font: inherit; font-size: 15px; line-height: 1;
+    background: transparent; border: 1px solid var(--line);
+    color: var(--dim); border-radius: 3px; padding: 7px 9px;
+    cursor: pointer; flex: 0 0 auto;
+  }
+
+  .icobtn:hover { color: var(--chalk); border-color: var(--steel); }
+  .icobtn[aria-pressed="true"] { color: var(--marker); border-color: var(--marker); }
+  .icobtn:focus-visible { outline: 2px solid var(--marker); outline-offset: 2px; }
 
   /* -------------------------------------------------------------- tabs -- */
   .tabs {
-    display: flex;
-    gap: 2px;
-    background: var(--line-soft);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 2px;
-    width: fit-content;
+    display: flex; gap: 2px; width: fit-content;
+    background: var(--pitch-2); border: 1px solid var(--line);
+    border-radius: 3px; padding: 2px;
   }
 
   .tab {
-    font: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: .07em;
-    text-transform: uppercase;
-    color: var(--muted);
-    background: none;
-    border: 0;
-    border-radius: 1px;
-    padding: 7px 15px;
-    cursor: pointer;
+    font: inherit; font-size: 11px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--dim); background: none; border: 0;
+    border-radius: 2px; padding: 7px 14px; cursor: pointer;
   }
 
-  .tab[aria-selected="true"] { background: var(--surface); color: var(--chalk); box-shadow: var(--shadow); }
-  .tab:focus-visible { outline: 2px solid var(--scrimmage); outline-offset: 1px; }
+  .tab[aria-selected="true"] { background: var(--pitch-3); color: var(--chalk); }
+  .tab:focus-visible { outline: 2px solid var(--marker); outline-offset: 1px; }
+
+  .diffbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-height: 26px; }
+  .diffbar .tab { padding: 5px 10px; font-size: 10px; }
+  .diff-label { font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+  .diff-note { font-size: 11.5px; color: var(--steel); }
+  .diff-note b { color: var(--marker); font-weight: 600; }
 
   /* ------------------------------------------------------------- board -- */
   .board {
-    background: var(--surface);
+    background: var(--pitch-2);
     border: 1px solid var(--line);
     border-radius: 4px;
-    box-shadow: var(--shadow);
     overflow: hidden;
   }
 
   .board-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--line-soft);
-    background: var(--raise);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    padding: 11px 15px; background: var(--pitch-3);
+    border-bottom: 1px solid var(--line);
   }
 
-  .slug {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--muted);
+  .slug { font-size: 10.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--steel); }
+  .slug b { color: var(--chalk); }
+
+  .headright { display: flex; align-items: center; gap: 14px; }
+
+  .par-read { display: flex; align-items: baseline; gap: 5px; }
+  .par-k { font-size: 9.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--dim); }
+  .par-v { font-family: "Anton", Impact, sans-serif; font-size: 19px; line-height: 1; font-variant-numeric: tabular-nums; }
+
+  .downbar { display: flex; align-items: center; gap: 8px; }
+  .downs { display: flex; gap: 4px; }
+
+  .pip { width: 14px; height: 14px; border-radius: 2px; background: var(--marker); border: 1px solid var(--marker); }
+  .pip.spent { background: transparent; border-color: var(--line); }
+  .pip.losing { animation: burn 220ms ease-in forwards; }
+
+  @keyframes burn {
+    0%   { background: var(--flag); border-color: var(--flag); transform: scale(1.15); }
+    100% { background: transparent; border-color: var(--line); transform: scale(.86); }
   }
-
-  .readouts { display: flex; gap: 16px; }
-
-  .readout { display: flex; align-items: baseline; gap: 5px; }
-
-  .readout-k {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--faint);
-  }
-
-  .readout-v {
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: 21px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .readout-v.is-over { color: var(--flag); }
-  .readout-v.is-par  { color: var(--good); }
 
   /* ------------------------------------------------------------- chain -- */
-  .chain { padding: 8px 16px 4px; display: flex; flex-direction: column; }
+  .chain { padding: 12px 15px 6px; }
 
-  .plate {
-    display: flex;
-    align-items: stretch;
-    gap: 0;
-    border: 1px solid var(--line);
-    border-radius: var(--plate-r);
-    background: var(--surface);
-    overflow: hidden;
-    position: relative;
+  .zone {
+    display: flex; align-items: center; gap: 11px;
+    padding: 12px 14px; border-radius: 3px; position: relative;
   }
 
-  .plate.is-new { animation: drop .34s cubic-bezier(.16,.9,.3,1); }
+  .zone-start { background: linear-gradient(90deg, rgba(46,127,232,.20), rgba(46,127,232,.04)); border: 1px solid rgba(46,127,232,.42); }
+  .zone-end   { background: linear-gradient(90deg, rgba(255,212,0,.16), rgba(255,212,0,.03)); border: 1px solid rgba(255,212,0,.40); }
 
-  @keyframes drop {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: none; }
+  .zone-tag {
+    font-size: 8.5px; font-weight: 700; letter-spacing: .15em;
+    text-transform: uppercase; padding: 3px 6px; border-radius: 2px;
+    white-space: nowrap; flex: 0 0 auto;
   }
 
-  .rail { width: 5px; flex: 0 0 5px; background: var(--line); }
-  .plate[data-role="start"]  .rail { background: var(--scrimmage); }
-  .plate[data-role="target"] .rail { background: var(--marker); }
+  .zone-start .zone-tag { background: var(--scrimmage); color: #fff; }
+  .zone-end   .zone-tag { background: var(--marker); color: #0A0F0D; }
 
-  .plate-body { flex: 1 1 auto; padding: 10px 12px; min-width: 0; }
+  .who { flex: 1 1 auto; min-width: 0; }
 
-  .plate-name {
-    font-family: "Bebas Neue", "Archivo Narrow", Impact, sans-serif;
-    font-size: 25px;
-    line-height: 1.02;
-    letter-spacing: .012em;
-    overflow-wrap: anywhere;
+  .who-name {
+    font-weight: 700; font-size: 16px; letter-spacing: -.012em;
+    text-transform: uppercase; line-height: 1.15; overflow-wrap: anywhere;
   }
 
-  .plate-meta {
+  .who-meta {
     font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 3px;
-    overflow-wrap: anywhere;
+    font-size: 10.5px; color: var(--steel); margin-top: 2px; overflow-wrap: anywhere;
   }
 
-  .plate-tag {
-    align-self: flex-start;
-    margin: 10px 12px 0 0;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    padding: 3px 7px;
-    border-radius: 2px;
-    white-space: nowrap;
+  .swapbtn {
+    font: inherit; font-size: 10px; font-weight: 600;
+    color: var(--dim); background: none; border: 1px solid var(--line);
+    border-radius: 2px; padding: 4px 8px; cursor: pointer; flex: 0 0 auto;
   }
 
-  .plate[data-role="start"]  .plate-tag { color: var(--scrimmage); border: 1px solid var(--scrimmage); }
-  .plate[data-role="target"] .plate-tag { color: var(--marker);    border: 1px solid var(--marker); }
+  .swapbtn:hover { color: var(--chalk); border-color: var(--steel); }
+  .swapbtn:focus-visible { outline: 2px solid var(--marker); outline-offset: 1px; }
 
-  .plate-swap {
-    font: inherit;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    background: none;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 4px 9px;
-    margin: 10px 12px 0 0;
-    align-self: flex-start;
-    cursor: pointer;
-    white-space: nowrap;
+  /* animatable open without measuring heights in JS */
+  .row { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms cubic-bezier(.16,.9,.3,1); }
+  .row.is-in { grid-template-rows: 1fr; }
+  .row > .row-inner { overflow: hidden; min-height: 0; }
+
+  .seg {
+    padding: 7px 0 7px 26px; position: relative; min-height: 40px;
+    display: flex; align-items: center; gap: 8px;
   }
 
-  .plate-swap:hover { color: var(--chalk); border-color: var(--muted); }
-  .plate-swap:focus-visible { outline: 2px solid var(--scrimmage); outline-offset: 1px; }
-
-  /* --------------------------------------------------------- connector -- */
-  .conn {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 7px 0 7px 22px;
-    position: relative;
-    min-height: 40px;
-  }
-
-  .conn::before {
-    content: "";
-    position: absolute;
-    left: 9px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--line);
-  }
-
-  .conn.is-gap::before {
-    background: repeating-linear-gradient(
-      to bottom, var(--line) 0 4px, transparent 4px 9px);
-  }
-
-  .conn.is-new .chip { animation: stamp .3s cubic-bezier(.2,1.3,.4,1); }
-
-  @keyframes stamp {
-    from { opacity: 0; transform: scale(.86); }
-    to   { opacity: 1; transform: none; }
+  .seg::before {
+    content: ""; position: absolute; left: 10px; top: 0; bottom: 0;
+    width: 3px; border-radius: 2px; background: var(--seg-c, var(--line));
   }
 
   .chip {
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: 14px;
-    line-height: 1;
-    letter-spacing: .05em;
-    padding: 5px 8px 4px;
-    border-radius: 2px;
-    background: var(--tc, var(--line));
-    color: var(--tc-ink, #fff);
-    border: 1px solid rgba(0,0,0,.16);
-    white-space: nowrap;
+    font-family: "Anton", Impact, sans-serif; font-size: 12px; line-height: 1;
+    letter-spacing: .05em; padding: 6px 8px 5px; border-radius: 2px;
+    background: var(--seg-c, var(--line)); color: var(--seg-ink, #fff); flex: 0 0 auto;
   }
 
-  .conn-text { font-size: 12.5px; color: var(--muted); }
-  .conn-text b { color: var(--chalk); font-weight: 600; }
-
-  .conn-years {
-    font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
-    font-size: 11.5px;
-    font-variant-numeric: tabular-nums;
+  .chip-blind {
+    background: transparent; color: var(--good);
+    border: 1px dashed var(--good);
+    font-family: "Archivo", sans-serif; font-size: 10px; font-weight: 700;
+    letter-spacing: .1em; padding: 4px 7px;
   }
 
-  .conn-empty {
-    font-size: 12.5px;
-    color: var(--faint);
-    font-style: italic;
+  .seg-txt { font-size: 12px; color: var(--steel); }
+  .seg-txt b { color: var(--chalk); font-weight: 600; }
+  .seg-yrs { font-family: "Roboto Mono", monospace; font-size: 10.5px; color: var(--dim); }
+
+  .plate {
+    display: flex; align-items: center; gap: 11px;
+    padding: 11px 14px; border-radius: 3px;
+    background: var(--pitch-3); border: 1px solid var(--line);
   }
 
-  /* ------------------------------------------------------------ search -- */
-  .search {
-    position: relative;
-    padding: 10px 16px 16px;
-    border-top: 1px solid var(--line-soft);
+  /* par made visible up front, the way Wordle shows five blank tiles */
+  .socket {
+    padding: 11px 14px; border-radius: 3px; margin: 7px 0 0 26px;
+    border: 1px dashed var(--line); background: transparent;
+    font-family: "Roboto Mono", monospace; font-size: 10.5px;
+    color: var(--dim); letter-spacing: .1em; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: space-between;
   }
+
+  .socket.is-next { border-color: var(--marker); color: var(--marker); animation: breathe 1.9s ease-in-out infinite; }
+  .socket.is-over { border-color: var(--line); color: var(--steel); }
+
+  @keyframes breathe { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+
+  .marker-line {
+    height: 3px; background: var(--marker); border-radius: 2px;
+    margin: 9px 0 3px; box-shadow: 0 0 14px rgba(255,212,0,.45);
+    transform-origin: left center;
+  }
+
+  .marker-line.advance { animation: advance 380ms cubic-bezier(.34,1.2,.4,1); }
+
+  @keyframes advance {
+    0%   { transform: scaleX(.15); opacity: .5; }
+    100% { transform: scaleX(1); opacity: 1; }
+  }
+
+  .plate.is-new { animation: land 300ms cubic-bezier(.16,.9,.3,1); }
+
+  @keyframes land {
+    0%   { opacity: 0; transform: translateY(-9px) scale(.97); }
+    100% { opacity: 1; transform: none; }
+  }
+
+  .chip.is-new { animation: stamp 260ms cubic-bezier(.2,1.35,.4,1) 60ms backwards; }
+
+  @keyframes stamp {
+    0%   { opacity: 0; transform: scale(1.28) rotate(-3deg); }
+    100% { opacity: 1; transform: none; }
+  }
+
+  .plate.sweep, .zone.sweep { animation: sweep 340ms ease-out backwards; }
+
+  @keyframes sweep {
+    0%   { transform: none; box-shadow: 0 0 0 0 rgba(255,212,0,0); }
+    45%  { transform: scale(1.03); box-shadow: 0 0 0 2px rgba(255,212,0,.7); }
+    100% { transform: none; box-shadow: 0 0 0 0 rgba(255,212,0,0); }
+  }
+
+  /* -------------------------------------------------------------- input -- */
+  .search { position: relative; padding: 10px 15px 14px; border-top: 1px solid var(--line-2); }
 
   .search-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-    color: var(--muted);
-    display: block;
-    margin-bottom: 6px;
+    font-size: 10px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--dim); display: block; margin-bottom: 6px;
   }
 
   .search-input {
-    width: 100%;
-    font: inherit;
-    font-size: 15px;
-    color: var(--chalk);
-    background: var(--raise);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    padding: 11px 12px;
+    width: 100%; font: inherit; font-size: 15px; color: var(--chalk);
+    background: var(--pitch); border: 1px solid var(--line);
+    border-radius: 3px; padding: 12px 13px;
   }
 
-  .search-input::placeholder { color: var(--faint); }
-  .search-input:focus { outline: 2px solid var(--scrimmage); outline-offset: -1px; border-color: var(--scrimmage); }
-  .search.is-bad .search-input { border-color: var(--flag); animation: shake .32s; }
+  .search-input::placeholder { color: var(--dim); }
+  .search-input:focus { outline: none; border-color: var(--marker); box-shadow: 0 0 0 1px var(--marker); }
+  .search.is-bad .search-input { border-color: var(--flag); box-shadow: 0 0 0 1px var(--flag); animation: shake 340ms cubic-bezier(.36,.07,.19,.97); }
 
   @keyframes shake {
-    10%, 90% { transform: translateX(-2px); }
-    30%, 70% { transform: translateX(3px); }
-    50%      { transform: translateX(-2px); }
+    15%  { transform: translateX(-6px); }
+    35%  { transform: translateX(5px); }
+    55%  { transform: translateX(-3px); }
+    75%  { transform: translateX(2px); }
+    100% { transform: none; }
+  }
+
+  .pflag {
+    position: absolute; width: 14px; height: 14px; background: var(--marker);
+    border-radius: 2px; pointer-events: none; z-index: 5; right: 26px; top: 34px;
+    animation: toss 460ms cubic-bezier(.3,.7,.4,1) forwards;
+  }
+
+  @keyframes toss {
+    0%   { opacity: 0; transform: translate(40px, -26px) rotate(0deg) scale(.7); }
+    25%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-12px, 34px) rotate(220deg) scale(1); }
   }
 
   .results {
-    position: absolute;
-    left: 16px;
-    right: 16px;
-    top: calc(100% - 10px);
-    z-index: 40;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    box-shadow: var(--shadow);
-    max-height: 292px;
-    overflow-y: auto;
-    padding: 3px;
+    position: absolute; left: 15px; right: 15px; top: calc(100% - 8px); z-index: 40;
+    background: var(--pitch-3); border: 1px solid var(--line); border-radius: 3px;
+    max-height: 268px; overflow-y: auto; padding: 3px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.5);
   }
 
   .result {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    width: 100%;
-    text-align: left;
-    font: inherit;
-    background: none;
-    border: 0;
-    border-radius: 2px;
-    padding: 7px 9px;
-    cursor: pointer;
-    color: var(--chalk);
+    display: flex; align-items: baseline; gap: 8px; width: 100%;
+    text-align: left; font: inherit; background: none; border: 0;
+    border-radius: 2px; padding: 8px 9px; cursor: pointer; color: var(--chalk);
   }
 
-  .result:hover, .result.is-active { background: var(--raise); }
+  .result.is-active, .result:hover { background: rgba(255,212,0,.12); }
 
   .result-name { font-weight: 600; font-size: 14px; }
   .result-pos {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    color: var(--muted);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 1px 4px;
+    font-size: 9.5px; font-weight: 700; letter-spacing: .08em; color: var(--dim);
+    border: 1px solid var(--line); border-radius: 2px; padding: 1px 4px; flex: 0 0 auto;
   }
-  .result-teams {
-    font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
-    font-size: 10.5px;
-    color: var(--faint);
-    margin-left: auto;
-    white-space: nowrap;
+  .result-meta {
+    font-family: "Roboto Mono", monospace; font-size: 10px; color: var(--dim);
+    margin-left: auto; white-space: nowrap; flex: 0 0 auto;
   }
 
-  .search-msg { font-size: 12.5px; margin-top: 7px; min-height: 17px; }
-  .search-msg.bad  { color: var(--flag); }
-  .search-msg.good { color: var(--good); }
-
-  /* ----------------------------------------------------------- actions -- */
-  .actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    padding: 0 16px 14px;
+  .verdict { min-height: 20px; margin-top: 8px; font-size: 12.5px; color: var(--steel); }
+  .verdict.bad  { color: var(--flag); }
+  .verdict.good { color: var(--good); }
+  .verdict b {
+    font-family: "Anton", Impact, sans-serif; font-size: 14px;
+    letter-spacing: .06em; margin-right: 6px; text-transform: uppercase;
   }
+
+  /* ------------------------------------------------------------ actions -- */
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; padding: 0 15px 13px; }
 
   .btn {
-    font: inherit;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--muted);
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    padding: 8px 13px;
-    cursor: pointer;
+    font: inherit; font-size: 11px; font-weight: 700;
+    letter-spacing: .09em; text-transform: uppercase;
+    color: var(--steel); background: transparent;
+    border: 1px solid var(--line); border-radius: 3px;
+    padding: 8px 13px; cursor: pointer;
   }
 
-  .btn:hover { color: var(--chalk); border-color: var(--muted); }
-  .btn:focus-visible { outline: 2px solid var(--scrimmage); outline-offset: 1px; }
-  .btn:disabled { opacity: .4; cursor: default; }
-  .btn-key { background: var(--chalk); color: var(--surface); border-color: var(--chalk); }
-  .btn-key:hover { opacity: .86; color: var(--surface); }
+  .btn:hover { color: var(--chalk); border-color: var(--steel); }
+  .btn:focus-visible { outline: 2px solid var(--marker); outline-offset: 2px; }
+  .btn-key { background: var(--marker); color: #0A0F0D; border-color: var(--marker); }
+  .btn-key:hover { color: #0A0F0D; filter: brightness(1.08); }
 
-  /* ------------------------------------------------------------ result -- */
-  .outcome {
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--surface);
-    box-shadow: var(--shadow);
-    overflow: hidden;
+  /* quitting is demoted: you get the behaviour you make easy */
+  .quit {
+    font: inherit; font-size: 11px; color: var(--dim);
+    background: none; border: 0; cursor: pointer;
+    margin-left: auto; text-decoration: underline; text-underline-offset: 3px;
   }
 
-  .outcome-head {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--line-soft);
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
+  .quit:hover { color: var(--flag); }
+  .quit:focus-visible { outline: 2px solid var(--marker); outline-offset: 2px; }
+
+  /* ------------------------------------------------------------ outcome -- */
+  .outcome { border: 1px solid var(--line); border-radius: 4px; background: var(--pitch-2); overflow: hidden; }
+
+  .wincard { text-align: center; padding: 26px 18px 20px; background: var(--pitch-3); border-top: 4px solid var(--good); }
+  .outcome.perfect .wincard { border-top-color: var(--marker); }
+  .outcome.lose .wincard { border-top-color: var(--flag); }
+
+  .win-title {
+    font-family: "Anton", Impact, sans-serif;
+    font-size: clamp(38px, 11.5vw, 62px); line-height: .9;
+    text-transform: uppercase; color: var(--good);
+    animation: slam 520ms cubic-bezier(.18,1.35,.35,1);
   }
 
-  .outcome-title {
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: 27px;
-    line-height: 1;
-  }
-
-  .outcome.win  .outcome-title { color: var(--good); }
-  .outcome.lose .outcome-title { color: var(--flag); }
-
-  .outcome-sub { font-size: 13px; color: var(--muted); }
-
-  .outcome-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
-
-  .share-box {
-    font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
-    font-size: 12px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    background: var(--raise);
-    border: 1px solid var(--line-soft);
-    border-radius: 3px;
-    padding: 11px 12px;
-    color: var(--chalk);
-  }
-
-  .statgrid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border: 1px solid var(--line-soft);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-
-  .stat {
-    padding: 10px 8px;
-    text-align: center;
-    border-right: 1px solid var(--line-soft);
-    background: var(--raise);
-  }
-
-  .stat:last-child { border-right: 0; }
-
-  .stat-v {
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: 25px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .stat-k {
-    font-size: 9.5px;
-    font-weight: 600;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--faint);
-    margin-top: 3px;
-  }
-
-  /* -------------------------------------------------------- difficulty -- */
-  .diffbar {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    min-height: 28px;
-  }
-
-  .diffbar .tab { padding: 5px 11px; font-size: 11px; }
-
-  .diff-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--faint);
-  }
-
-  .diff-note { font-size: 12px; color: var(--muted); }
-
-  .chip-blind {
-    background: transparent;
-    color: var(--good);
-    border: 1px dashed var(--good);
-    font-family: "Archivo", sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 7px;
-  }
-
-  /* ------------------------------------------------------ win celebration -- */
-  #confetti {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 90;
-  }
-
-  .hero {
-    text-align: center;
-    padding: 26px 18px 20px;
-    background: var(--raise);
-    border-top: 5px solid var(--good);
-    border-bottom: 1px solid var(--line-soft);
-  }
-
-  .outcome.perfect .hero { border-top-color: var(--marker); }
-
-  .hero-title {
-    font-family: "Bebas Neue", "Archivo Narrow", Impact, sans-serif;
-    font-size: clamp(42px, 13vw, 68px);
-    line-height: .88;
-    letter-spacing: .02em;
-    text-transform: uppercase;
-    color: var(--good);
-    animation: slam .52s cubic-bezier(.18,1.35,.35,1);
-  }
-
-  .outcome.perfect .hero-title { color: var(--marker); }
+  .outcome.perfect .win-title { color: var(--marker); }
+  .outcome.lose .win-title { color: var(--flag); }
 
   @keyframes slam {
-    0%   { opacity: 0; transform: scale(1.45); letter-spacing: .3em; }
+    0%   { opacity: 0; transform: scale(1.4); letter-spacing: .28em; }
     55%  { opacity: 1; }
-    100% { opacity: 1; transform: scale(1); letter-spacing: .02em; }
+    100% { opacity: 1; transform: scale(1); letter-spacing: .01em; }
   }
 
-  .hero-score {
-    display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 9px;
-    flex-wrap: wrap;
-    margin-top: 10px;
-    font-size: 12px;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color: var(--muted);
+  .win-sub {
+    display: flex; justify-content: center; gap: 9px; flex-wrap: wrap;
+    margin-top: 11px; font-size: 10.5px; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--steel);
   }
 
-  .hero-score b {
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: 25px;
-    font-weight: 400;
-    color: var(--chalk);
-    font-variant-numeric: tabular-nums;
-    margin-right: 2px;
+  .win-sub b {
+    font-family: "Anton", Impact, sans-serif; font-size: 21px; font-weight: 400;
+    color: var(--chalk); margin-right: 3px; font-variant-numeric: tabular-nums;
   }
 
-  .hero-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); align-self: center; }
+  .outcome-body { padding: 14px 15px; display: flex; flex-direction: column; gap: 13px; }
 
-  /* the finished chain, stamped in one link at a time */
-  .replay {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .replay-node {
-    font-family: "Bebas Neue", "Archivo Narrow", Impact, sans-serif;
-    font-size: 19px;
-    line-height: 1;
-    padding: 7px 10px 5px;
-    border: 1px solid var(--line);
-    border-radius: 2px;
-    background: var(--surface);
-    opacity: 0;
-    animation: pop .32s cubic-bezier(.2,1.3,.4,1) forwards;
-    animation-delay: var(--d, 0ms);
-  }
-
-  .replay-node.is-end { border-color: var(--muted); }
-
-  .replay-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    opacity: 0;
-    animation: pop .32s cubic-bezier(.2,1.3,.4,1) forwards;
-    animation-delay: var(--d, 0ms);
-  }
-
-  .replay-chip {
-    font-family: "Bebas Neue", Impact, sans-serif;
-    font-size: 12px;
-    line-height: 1;
-    padding: 4px 6px 3px;
-    border-radius: 2px;
-    background: var(--tc);
-    color: var(--tc-ink);
-    border: 1px solid rgba(0,0,0,.18);
-  }
-
-  .replay-yrs {
+  .share {
     font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
-    font-size: 10.5px;
-    color: var(--faint);
-    font-variant-numeric: tabular-nums;
+    font-size: 13px; line-height: 1.75; white-space: pre-wrap;
+    background: var(--pitch); border: 1px solid var(--line);
+    border-radius: 3px; padding: 12px 13px; color: var(--chalk);
+  }
+
+  .route { display: flex; flex-direction: column; gap: 6px; }
+
+  .route-row {
+    display: flex; align-items: center; gap: 8px; font-size: 13px;
+    opacity: 0; animation: pop .3s cubic-bezier(.2,1.3,.4,1) forwards;
+    animation-delay: var(--d, 0ms);
   }
 
   @keyframes pop {
-    from { opacity: 0; transform: translateY(6px) scale(.94); }
+    from { opacity: 0; transform: translateY(6px) scale(.95); }
     to   { opacity: 1; transform: none; }
   }
 
-  /* -------------------------------------------------------------- misc -- */
-  .how {
-    border: 1px solid var(--line);
-    border-radius: 4px;
-    background: var(--surface);
-    padding: 0 16px;
+  .route-name { font-weight: 600; text-transform: uppercase; font-size: 13px; letter-spacing: -.01em; }
+  .route-via { font-family: "Roboto Mono", monospace; font-size: 10.5px; color: var(--dim); padding-left: 6px; }
+
+  .countdown {
+    display: flex; align-items: baseline; justify-content: center; gap: 8px;
+    padding: 11px; background: var(--pitch); border: 1px solid var(--line); border-radius: 3px;
   }
 
+  .cd-k { font-size: 9.5px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--dim); }
+  .cd-v {
+    font-family: "Roboto Mono", monospace; font-size: 19px;
+    color: var(--marker); font-variant-numeric: tabular-nums; letter-spacing: .02em;
+  }
+
+  .statgrid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 3px; overflow: hidden; }
+  .stat { padding: 10px 6px; text-align: center; border-right: 1px solid var(--line); background: var(--pitch); }
+  .stat:last-child { border-right: 0; }
+  .stat-v { font-family: "Anton", Impact, sans-serif; font-size: 23px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .stat-k { font-size: 8.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-top: 3px; }
+
+  .dist { display: flex; flex-direction: column; gap: 4px; }
+  .dist-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+  .dist-k { font-family: "Roboto Mono", monospace; font-size: 10.5px; color: var(--dim); width: 26px; flex: 0 0 auto; }
+  .dist-bar { height: 15px; background: var(--line); border-radius: 2px; min-width: 3px; transition: width 500ms cubic-bezier(.16,.9,.3,1); }
+  .dist-bar.top { background: var(--marker); }
+  .dist-n { font-family: "Roboto Mono", monospace; font-size: 10.5px; color: var(--steel); }
+
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 90; }
+
+  /* -------------------------------------------------------------- intro -- */
+  .intro {
+    position: fixed; inset: 0; z-index: 120;
+    background: rgba(5,8,7,.86);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+
+  .intro-card {
+    background: var(--pitch-2); border: 1px solid var(--line);
+    border-top: 4px solid var(--marker); border-radius: 4px;
+    max-width: 400px; padding: 24px 22px;
+  }
+
+  .intro-card h2 {
+    font-family: "Anton", Impact, sans-serif; font-size: 30px; line-height: .95;
+    text-transform: uppercase; margin: 0 0 12px;
+  }
+
+  .intro-card ol { margin: 0 0 16px; padding-left: 19px; color: var(--steel); font-size: 14px; }
+  .intro-card li { margin-bottom: 8px; }
+  .intro-card li::marker { color: var(--marker); font-weight: 700; }
+  .intro-card b { color: var(--chalk); font-weight: 600; }
+
+  .intro-eg {
+    font-family: "Roboto Mono", monospace; font-size: 11.5px; line-height: 1.7;
+    background: var(--pitch); border: 1px solid var(--line); border-radius: 3px;
+    padding: 10px 12px; color: var(--steel); margin-bottom: 16px;
+  }
+
+  .intro-eg b { color: var(--marker); font-weight: 500; }
+
+  /* --------------------------------------------------------------- misc -- */
+  .how { border: 1px solid var(--line); border-radius: 4px; background: var(--pitch-2); padding: 0 15px; }
+
   .how > summary {
-    cursor: pointer;
-    padding: 12px 0;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    list-style: none;
+    cursor: pointer; padding: 11px 0; font-size: 10.5px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--dim); list-style: none;
   }
 
   .how > summary::-webkit-details-marker { display: none; }
-  .how > summary::before { content: "+ "; color: var(--faint); }
+  .how > summary::before { content: "+ "; }
   .how[open] > summary::before { content: "\2212 "; }
-  .how > summary:focus-visible { outline: 2px solid var(--scrimmage); outline-offset: 2px; }
+  .how > summary:focus-visible { outline: 2px solid var(--marker); outline-offset: 2px; }
 
-  .how-body {
-    padding: 0 0 16px;
-    font-size: 13.5px;
-    color: var(--muted);
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-    max-width: 62ch;
-  }
-
+  .how-body { padding: 0 0 15px; font-size: 13px; color: var(--steel); display: flex; flex-direction: column; gap: 8px; }
   .how-body b { color: var(--chalk); font-weight: 600; }
-  .how-body code {
-    font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
-    font-size: 12px;
-    background: var(--raise);
-    padding: 1px 4px;
-    border-radius: 2px;
-  }
+  .how-body code { font-family: "Roboto Mono", monospace; font-size: 11.5px; background: var(--pitch); padding: 1px 4px; border-radius: 2px; }
 
-  .foot {
-    font-size: 11.5px;
-    color: var(--faint);
-    text-align: center;
-    line-height: 1.7;
-  }
+  .foot { font-size: 11px; color: var(--dim); text-align: center; line-height: 1.7; }
+  .foot a { color: var(--steel); }
 
-  .foot a { color: var(--muted); }
-
-  .loading { padding: 40px 16px; text-align: center; color: var(--muted); font-size: 14px; }
+  .loading { padding: 40px 15px; text-align: center; color: var(--dim); font-size: 13px; }
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
-    /* these animate from opacity:0 with `forwards`, so killing the animation
-       would otherwise leave them permanently invisible */
-    .replay-node, .replay-link { opacity: 1 !important; }
+    .row { grid-template-rows: 1fr; }
+    .route-row { opacity: 1 !important; }
   }
 
-  @media (max-width: 460px) {
-    .wrap { padding: 20px 13px 56px; }
-    .plate-name { font-size: 22px; }
-    .readouts { gap: 11px; }
-    .result-teams { display: none; }
+  @media (max-width: 440px) {
+    .wrap { padding: 20px 12px 60px; }
+    .who-name { font-size: 15px; }
+    .result-pos { display: none; }   /* the span disambiguates; the chip is noise */
+    .headright { gap: 10px; }
   }
 </style>
 
 <div class="wrap">
   <header class="masthead">
-    <div class="brandline">
-      <h1>NFL Connector</h1>
+    <div class="brandrow">
+      <h1>Move The <span class="accent">Chains</span></h1>
+      <button class="icobtn" id="sound" aria-pressed="false" title="Sound" aria-label="Toggle sound">&#9834;</button>
     </div>
-    <p class="tagline">Link two players through <b>shared rosters</b>. Anyone who suited up for the same team in the same season counts as a teammate.</p>
+    <p class="tagline">Link two NFL players through the teammates they shared a roster with.</p>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" id="tab-daily" aria-selected="true">Daily</button>
       <button class="tab" role="tab" id="tab-free" aria-selected="false">Free play</button>
@@ -739,20 +521,18 @@
     <div class="diffbar" id="diffbar"></div>
   </header>
 
-  <section class="board" id="board">
-    <div class="loading">Loading rosters&hellip;</div>
-  </section>
+  <section class="board" id="board"><div class="loading">Loading rosters&hellip;</div></section>
 
   <section id="outcome-slot"></section>
 
   <details class="how">
     <summary>How it works</summary>
     <div class="how-body">
-      <p>You get a <b>start</b> player and a <b>target</b> player. Name someone who shared a roster with the start player, then someone who shared a roster with <em>them</em>, and keep going until you reach the target.</p>
-      <p>Two players count as teammates if they appear on the <b>same team's roster in the same season</b> &mdash; regular season, practice squad, or a stint that ended in a cut. They did not have to play a snap together.</p>
-      <p><b>Par</b> is the fewest links the puzzle can be solved in. Beating par is not possible; matching it is the goal.</p>
-      <p>Free play has three <b>difficulty</b> settings, which change how much the board tells you: <b>Easy</b> shows each team and the seasons behind it, <b>Medium</b> shows teams only, and <b>Hard</b> shows neither &mdash; you get a name and a position, and the rosters have to come from memory. Finishing a chain reveals every connection, whichever setting you played on. The daily puzzle always shows full detail.</p>
-      <p>Rosters cover <code id="span-note">2000&ndash;2026</code>, so only teams and stints from those seasons count. Tom Brady connects through New England and Tampa Bay, not Michigan.</p>
+      <p>Name someone who shared a roster with the start player, then someone who shared a roster with <em>them</em>, until you reach the target.</p>
+      <p>Two players are teammates if they were on the <b>same team's roster in the same season</b> &mdash; regular season, practice squad, or a stint that ended in a cut. They did not have to play a snap together.</p>
+      <p><b>Downs.</b> In the daily and on hard, a wrong guess costs a down. Convert a link and the chains move &mdash; four fresh downs. Burn all four on one link and it is a turnover. Easy and medium free play have no downs; guess freely.</p>
+      <p><b>Par</b> is the fewest links possible. Matching it with no wrong guesses and no hints is a touchdown.</p>
+      <p>Rosters cover <code id="span-note">2000&ndash;2026</code>, so only stints from those seasons count.</p>
     </div>
   </details>
 
@@ -769,90 +549,57 @@
   "use strict";
 
   var RAW = JSON.parse(document.getElementById("nfl-data").textContent);
-  var START_SEASON = RAW.startSeason;
-  var END_SEASON = RAW.endSeason;
-  var TEAMS = RAW.teams;
-  var P = RAW.players;
-  var N = P.length;
+  var START_SEASON = RAW.startSeason, END_SEASON = RAW.endSeason;
+  var TEAMS = RAW.teams, P = RAW.players, N = P.length;
 
-  /* ------------------------------------------------------------ franchises --
-     Codes alias across eras (ARZ/ARI, BLT/BAL, SL/STL, OAK/LV, SD/LAC ...).
-     Each entry carries the era-accurate name plus that franchise's colour. */
+  /* Alias codes are folded in the build; these remain as a safety net. */
   var FRANCHISE = {
-    ARI: ["Cardinals", "Arizona Cardinals", "#97233F"],
-    ARZ: ["Cardinals", "Arizona Cardinals", "#97233F"],
-    ATL: ["Falcons", "Atlanta Falcons", "#A71930"],
-    BAL: ["Ravens", "Baltimore Ravens", "#241773"],
-    BLT: ["Ravens", "Baltimore Ravens", "#241773"],
-    BUF: ["Bills", "Buffalo Bills", "#00338D"],
-    CAR: ["Panthers", "Carolina Panthers", "#0085CA"],
-    CHI: ["Bears", "Chicago Bears", "#1B3A5C"],
-    CIN: ["Bengals", "Cincinnati Bengals", "#FB4F14"],
-    CLE: ["Browns", "Cleveland Browns", "#E4671B"],
-    CLV: ["Browns", "Cleveland Browns", "#E4671B"],
-    DAL: ["Cowboys", "Dallas Cowboys", "#003594"],
-    DEN: ["Broncos", "Denver Broncos", "#FB4F14"],
-    DET: ["Lions", "Detroit Lions", "#0076B6"],
-    GB:  ["Packers", "Green Bay Packers", "#28553F"],
-    HOU: ["Texans", "Houston Texans", "#A71930"],
-    HST: ["Texans", "Houston Texans", "#A71930"],
-    IND: ["Colts", "Indianapolis Colts", "#0A3F80"],
-    JAX: ["Jaguars", "Jacksonville Jaguars", "#007487"],
-    KC:  ["Chiefs", "Kansas City Chiefs", "#E31837"],
-    LA:  ["Rams", "Los Angeles Rams", "#003594"],
-    LAC: ["Chargers", "Los Angeles Chargers", "#0080C6"],
-    LV:  ["Raiders", "Las Vegas Raiders", "#4A4A4A"],
-    MIA: ["Dolphins", "Miami Dolphins", "#008E97"],
-    MIN: ["Vikings", "Minnesota Vikings", "#4F2683"],
-    NE:  ["Patriots", "New England Patriots", "#1F3A63"],
-    NO:  ["Saints", "New Orleans Saints", "#9F8958"],
-    NYG: ["Giants", "New York Giants", "#14337A"],
-    NYJ: ["Jets", "New York Jets", "#175E33"],
-    OAK: ["Raiders", "Oakland Raiders", "#4A4A4A"],
-    PHI: ["Eagles", "Philadelphia Eagles", "#046651"],
-    PIT: ["Steelers", "Pittsburgh Steelers", "#C9A227"],
-    SD:  ["Chargers", "San Diego Chargers", "#0080C6"],
-    SEA: ["Seahawks", "Seattle Seahawks", "#4F9E28"],
-    SF:  ["49ers", "San Francisco 49ers", "#AA0000"],
-    SL:  ["Rams", "St. Louis Rams", "#0A3F80"],
-    STL: ["Rams", "St. Louis Rams", "#0A3F80"],
-    TB:  ["Buccaneers", "Tampa Bay Buccaneers", "#D50A0A"],
-    TEN: ["Titans", "Tennessee Titans", "#2A6EBB"],
-    WAS: ["Washington", "Washington", "#7A2B2B"]
+    ARI: ["Cardinals", "#97233F"], ARZ: ["Cardinals", "#97233F"],
+    ATL: ["Falcons", "#A71930"],   BAL: ["Ravens", "#4B3A9E"],
+    BLT: ["Ravens", "#4B3A9E"],    BUF: ["Bills", "#00338D"],
+    CAR: ["Panthers", "#0085CA"],  CHI: ["Bears", "#2B4C7E"],
+    CIN: ["Bengals", "#FB4F14"],   CLE: ["Browns", "#E4671B"],
+    CLV: ["Browns", "#E4671B"],    DAL: ["Cowboys", "#2A54A8"],
+    DEN: ["Broncos", "#FB4F14"],   DET: ["Lions", "#0076B6"],
+    GB:  ["Packers", "#2E6B4F"],   HOU: ["Texans", "#A71930"],
+    HST: ["Texans", "#A71930"],    IND: ["Colts", "#1B5FA8"],
+    JAX: ["Jaguars", "#008699"],   KC:  ["Chiefs", "#E31837"],
+    LA:  ["Rams", "#2A54A8"],      LAC: ["Chargers", "#0080C6"],
+    LV:  ["Raiders", "#6B6B6B"],   MIA: ["Dolphins", "#00A5AD"],
+    MIN: ["Vikings", "#6B3FA0"],   NE:  ["Patriots", "#2B4C7E"],
+    NO:  ["Saints", "#B39B62"],    NYG: ["Giants", "#1B44A0"],
+    NYJ: ["Jets", "#1E7A46"],      OAK: ["Raiders", "#6B6B6B"],
+    PHI: ["Eagles", "#0A7466"],    PIT: ["Steelers", "#C9A227"],
+    SD:  ["Chargers", "#0080C6"],  SEA: ["Seahawks", "#4F9E28"],
+    SF:  ["49ers", "#C4342F"],     SL:  ["Rams", "#1B5FA8"],
+    STL: ["Rams", "#1B5FA8"],      TB:  ["Buccaneers", "#D50A0A"],
+    TEN: ["Titans", "#2A6EBB"],    WAS: ["Washington", "#8C3A3A"]
   };
 
   function franchise(code, season) {
-    var f = FRANCHISE[code] || [code, code, "#6B7671"];
-    var name = f[0], full = f[1];
-    if (code === "WAS" && season >= 2022) { name = "Commanders"; full = "Washington Commanders"; }
-    return { short: name, full: full, color: f[2] };
+    var f = FRANCHISE[code] || [code, "#6B7671"];
+    var name = f[0];
+    if (code === "WAS" && season >= 2022) name = "Commanders";
+    return { short: name, color: f[1] };
   }
 
-  /* Readable ink for a coloured chip. */
   function inkFor(hex) {
     var r = parseInt(hex.slice(1, 3), 16) / 255,
         g = parseInt(hex.slice(3, 5), 16) / 255,
         b = parseInt(hex.slice(5, 7), 16) / 255;
-    function lin(c) { return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }
-    var L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-    return L > 0.42 ? "#12181A" : "#FFFFFF";
+    function lin(c) { return c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4); }
+    return (.2126 * lin(r) + .7152 * lin(g) + .0722 * lin(b)) > .42 ? "#0A0F0D" : "#FFFFFF";
   }
 
-  /* ---------------------------------------------------------------- index --
-     Every (team, season) a player was rostered for becomes a slot key.
-     Rosters are stored CSR-style so neighbour walks stay tight. */
+  /* ---------------------------------------------------------------- index -- */
   var SPAN = END_SEASON - START_SEASON + 1;
-  function slotKey(t, season) { return t * SPAN + (season - START_SEASON); }
-
-  var playerSlots = new Array(N);
-  var slotCount = new Map();
-  var totalPairs = 0;
+  var playerSlots = new Array(N), slotCount = new Map(), totalPairs = 0;
 
   for (var i = 0; i < N; i++) {
     var st = P[i].s, keys = [];
     for (var j = 0; j < st.length; j++) {
       for (var y = st[j][1]; y <= st[j][2]; y++) {
-        var k = slotKey(st[j][0], y);
+        var k = st[j][0] * SPAN + (y - START_SEASON);
         keys.push(k);
         slotCount.set(k, (slotCount.get(k) || 0) + 1);
       }
@@ -861,27 +608,16 @@
     totalPairs += keys.length;
   }
 
-  var slotId = new Map();
-  var slotStart = new Int32Array(slotCount.size + 1);
-  var sid = 0;
-  slotCount.forEach(function (cnt, key) {
-    slotId.set(key, sid);
-    slotStart[sid + 1] = cnt;
-    sid++;
-  });
+  var slotId = new Map(), slotStart = new Int32Array(slotCount.size + 1), sid = 0;
+  slotCount.forEach(function (cnt, key) { slotId.set(key, sid); slotStart[sid + 1] = cnt; sid++; });
   for (var s = 1; s <= sid; s++) slotStart[s] += slotStart[s - 1];
 
-  var rosterFlat = new Int32Array(totalPairs);
-  var fillCursor = slotStart.slice(0, sid);
+  var rosterFlat = new Int32Array(totalPairs), cursor = slotStart.slice(0, sid);
   for (var i2 = 0; i2 < N; i2++) {
     var ks = playerSlots[i2];
-    for (var j2 = 0; j2 < ks.length; j2++) {
-      var id = slotId.get(ks[j2]);
-      rosterFlat[fillCursor[id]++] = i2;
-    }
+    for (var j2 = 0; j2 < ks.length; j2++) rosterFlat[cursor[slotId.get(ks[j2])]++] = i2;
   }
 
-  /* playerSlots holds raw keys; convert to dense slot ids for the hot loop. */
   var playerSlotIds = new Array(N);
   for (var i3 = 0; i3 < N; i3++) {
     var raw = playerSlots[i3], out = new Int32Array(raw.length);
@@ -889,21 +625,18 @@
     playerSlotIds[i3] = out;
   }
 
-  /* --------------------------------------------------------- teammate ops -- */
-  function sharedSlots(a, b) {
-    var A = playerSlotIds[a], B = playerSlotIds[b], hits = [];
-    for (var x = 0; x < A.length; x++) {
-      for (var y2 = 0; y2 < B.length; y2++) {
-        if (A[x] === B[y2]) { hits.push(A[x]); break; }
-      }
-    }
-    return hits;
-  }
-
   var slotKeyById = new Int32Array(sid);
   slotId.forEach(function (id, key) { slotKeyById[id] = key; });
 
-  /* Collapse shared slots into "team + season range" strings. */
+  /* ------------------------------------------------------------ teammates -- */
+  function sharedSlots(a, b) {
+    var A = playerSlotIds[a], B = playerSlotIds[b], hits = [];
+    for (var x = 0; x < A.length; x++)
+      for (var y2 = 0; y2 < B.length; y2++)
+        if (A[x] === B[y2]) { hits.push(A[x]); break; }
+    return hits;
+  }
+
   function sharedStints(a, b) {
     var hits = sharedSlots(a, b);
     if (!hits.length) return [];
@@ -930,21 +663,19 @@
 
   function areTeammates(a, b) { return sharedSlots(a, b).length > 0; }
 
-  /* ------------------------------------------------------ shortest path --
-     Bidirectional BFS. The graph is dense (a roster slot links ~90 players)
-     so meeting in the middle keeps even 4-link puzzles instant. */
-  var visitA = new Int32Array(N), visitB = new Int32Array(N), visitStamp = 0;
+  /* --------------------------------------------------------------- paths -- */
+  var visitA = new Int32Array(N), visitB = new Int32Array(N), stampN = 0;
   var fromA = new Int32Array(N), fromB = new Int32Array(N);
 
   function shortestPath(src, dst) {
     if (src === dst) return [src];
-    visitStamp++;
-    var stamp = visitStamp;
+    stampN++;
+    var stamp = stampN;
     visitA[src] = stamp; fromA[src] = -1;
     visitB[dst] = stamp; fromB[dst] = -1;
     var frontA = [src], frontB = [dst], depth = 0;
 
-    function expand(front, mine, theirs, parent, otherParent, forward) {
+    function expand(front, mine, theirs, parent) {
       var next = [];
       for (var f = 0; f < front.length; f++) {
         var node = front[f], slots = playerSlotIds[node];
@@ -966,17 +697,58 @@
     while (depth < 8 && frontA.length && frontB.length) {
       var res;
       if (frontA.length <= frontB.length) {
-        res = expand(frontA, visitA, visitB, fromA, fromB, true);
+        res = expand(frontA, visitA, visitB, fromA);
         if (res.meet !== undefined) return stitch(res.meet, stamp);
         frontA = res.front;
       } else {
-        res = expand(frontB, visitB, visitA, fromB, fromA, false);
+        res = expand(frontB, visitB, visitA, fromB);
         if (res.meet !== undefined) return stitch(res.meet, stamp);
         frontB = res.front;
       }
       depth++;
     }
     return null;
+  }
+
+  /* Many shortest paths usually exist; BFS returns whichever it met first,
+     which is often a special-teamer nobody has heard of. For a hint, take the
+     most recognisable player that still keeps the chain at par. */
+  var hintDist = new Int16Array(N);
+
+  function bestHint(last, target) {
+    for (var i = 0; i < N; i++) hintDist[i] = -1;
+    hintDist[target] = 0;
+    var front = [target], depth = 0;
+    while (front.length && hintDist[last] === -1 && depth < 6) {
+      var next = [];
+      for (var f = 0; f < front.length; f++) {
+        var slots = playerSlotIds[front[f]];
+        for (var q = 0; q < slots.length; q++) {
+          var sl = slots[q];
+          for (var r = slotStart[sl]; r < slotStart[sl + 1]; r++) {
+            var nb = rosterFlat[r];
+            if (hintDist[nb] !== -1) continue;
+            hintDist[nb] = depth + 1;
+            next.push(nb);
+          }
+        }
+      }
+      front = next; depth++;
+    }
+    if (hintDist[last] <= 0) return -1;
+
+    var want = hintDist[last] - 1, best = -1;
+    var mine = playerSlotIds[last];
+    for (var q2 = 0; q2 < mine.length; q2++) {
+      var s2 = mine[q2];
+      for (var r2 = slotStart[s2]; r2 < slotStart[s2 + 1]; r2++) {
+        var cand = rosterFlat[r2];
+        if (hintDist[cand] !== want) continue;
+        if (cand === target && want !== 0) continue;
+        if (best === -1 || starPower[cand] > starPower[best]) best = cand;
+      }
+    }
+    return best;
   }
 
   function stitch(meet, stamp) {
@@ -988,47 +760,59 @@
     return left.concat(right);
   }
 
-  /* ---------------------------------------------------------- fame & pool -- */
+  /* ----------------------------------------------------------- fame pool -- */
   var POS_WEIGHT = {
     QB: 1.45, RB: 1.2, HB: 1.2, FB: .85, WR: 1.2, TE: 1.15,
-    CB: 1.0, DB: 1.0, S: 1.0, FS: 1.0, SS: 1.0,
-    LB: 1.0, ILB: 1.0, OLB: 1.0, MLB: 1.0,
+    CB: 1, DB: 1, S: 1, FS: 1, SS: 1, LB: 1, ILB: 1, OLB: 1, MLB: 1,
     DE: 1.05, DT: .95, DL: .95, NT: .85,
-    T: .7, OT: .7, G: .65, OG: .65, C: .72, OL: .68,
-    K: .55, P: .5, LS: .35
+    T: .7, OT: .7, G: .65, OG: .65, C: .72, OL: .68, K: .55, P: .5, LS: .35
   };
 
-  /* Fame is career-wide, but the graph only holds START_SEASON onward. A player
-     whose prime predates the window (Cris Dishman: one 2000 season, fame 155)
-     scores like a star while being nearly unreachable, so scale by how much of
-     him is actually in here and keep thin careers out of the puzzle pool. */
   var seasonsIn = new Int16Array(N);
   for (var i5 = 0; i5 < N; i5++) {
-    var seen = new Set(), sl = playerSlots[i5];
-    for (var j5 = 0; j5 < sl.length; j5++) seen.add(sl[j5] % SPAN);
+    var seen = new Set(), sl2 = playerSlots[i5];
+    for (var j5 = 0; j5 < sl2.length; j5++) seen.add(sl2[j5] % SPAN);
     seasonsIn[i5] = seen.size;
   }
 
   var starPower = new Float32Array(N);
   for (var i6 = 0; i6 < N; i6++) {
     var w = POS_WEIGHT[P[i6].p];
-    var presence = Math.min(1, seasonsIn[i6] / 6);
-    starPower[i6] = P[i6].f * (w === undefined ? .9 : w) * presence;
+    starPower[i6] = P[i6].f * (w === undefined ? .9 : w) * Math.min(1, seasonsIn[i6] / 6);
   }
 
   var POOL = [];
-  for (var i7 = 0; i7 < N; i7++) {
-    if (P[i7].f > 0 && seasonsIn[i7] >= 4) POOL.push(i7);
-  }
+  for (var i7 = 0; i7 < N; i7++) if (P[i7].f > 0 && seasonsIn[i7] >= 4) POOL.push(i7);
   POOL.sort(function (a, b) { return starPower[b] - starPower[a]; });
   POOL = POOL.slice(0, 600);
+  /* The daily is the ritual, so it draws from a stricter pool — a journeyman
+     starter can clear the free-play bar without being a name people know. */
+  var DAILY_POOL = POOL.slice(0, 300);
 
-  /* ------------------------------------------------------------- search -- */
+  var careerLo = new Int16Array(N), careerHi = new Int16Array(N);
+  for (var i25 = 0; i25 < N; i25++) {
+    var lo = 9999, hi = 0, cs = P[i25].s;
+    for (var j8 = 0; j8 < cs.length; j8++) {
+      if (cs[j8][1] < lo) lo = cs[j8][1];
+      if (cs[j8][2] > hi) hi = cs[j8][2];
+    }
+    careerLo[i25] = lo; careerHi[i25] = hi;
+  }
+
+  /* Years between two careers, 0 if they overlap. A pairing like Penei Sewell
+     (2021-) and Gus Frerotte (-2008) has a legal two-link path, but finding it
+     means knowing which twenty-year journeyman bridges the gap — technically
+     fair, miserable as a daily. */
+  function eraGap(a, b) {
+    if (careerHi[a] >= careerLo[b] && careerHi[b] >= careerLo[a]) return 0;
+    return careerHi[a] < careerLo[b] ? careerLo[b] - careerHi[a] : careerLo[a] - careerHi[b];
+  }
+
   var lower = new Array(N);
-  for (var i7 = 0; i7 < N; i7++) lower[i7] = P[i7].n.toLowerCase();
+  for (var i8 = 0; i8 < N; i8++) lower[i8] = P[i8].n.toLowerCase();
 
   var searchOrder = [];
-  for (var i8 = 0; i8 < N; i8++) searchOrder.push(i8);
+  for (var i9 = 0; i9 < N; i9++) searchOrder.push(i9);
   searchOrder.sort(function (a, b) { return starPower[b] - starPower[a]; });
 
   function search(q, limit) {
@@ -1046,34 +830,11 @@
     return exact.concat(wordStart, loose).slice(0, limit);
   }
 
-  /* --------------------------------------------------------------- utils -- */
-  function teamSummary(idx, max, withYears) {
-    var st = P[idx].s.slice().sort(function (a, b) { return a[1] - b[1]; });
-    var parts = [], shown = 0;
-    for (var i9 = 0; i9 < st.length; i9++) {
-      var code = TEAMS[st[i9][0]];
-      if (!withYears) {
-        if (parts.indexOf(code) !== -1) continue;   // one entry per franchise
-        if (parts.length >= max) { shown = -1; break; }
-        parts.push(code);
-        continue;
-      }
-      if (parts.length >= max) { shown = -1; break; }
-      parts.push(code + " " + (st[i9][1] === st[i9][2]
-        ? String(st[i9][1])
-        : st[i9][1] + "–" + String(st[i9][2]).slice(2)));
-    }
-    if (shown === -1) parts.push("+more");
-    return parts.join(", ");
-  }
-
-  /* How much of the puzzle is on show. Daily is always full detail, and a
-     finished board reveals everything — seeing the connections you built
-     blind is the payoff for playing on hard. */
-  function detail() {
-    if (state.mode === "daily") return "easy";
-    if (state.done) return "easy";
-    return state.difficulty;
+  /* ---------------------------------------------------------------- utils -- */
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
   }
 
   function careerSpan(idx) {
@@ -1082,15 +843,31 @@
       if (st[i10][1] < lo) lo = st[i10][1];
       if (st[i10][2] > hi) hi = st[i10][2];
     }
-    return lo + "–" + hi;
+    return lo + "–" + String(hi).slice(2);
   }
 
-  function hashStr(s) {
-    var h = 2166136261;
-    for (var i11 = 0; i11 < s.length; i11++) {
-      h ^= s.charCodeAt(i11);
-      h = Math.imul(h, 16777619);
+  function teamSummary(idx, max, withYears) {
+    var st = P[idx].s.slice().sort(function (a, b) { return a[1] - b[1]; });
+    var parts = [], trimmed = false;
+    for (var i11 = 0; i11 < st.length; i11++) {
+      var code = TEAMS[st[i11][0]];
+      if (!withYears) {
+        if (parts.indexOf(code) !== -1) continue;
+        if (parts.length >= max) { trimmed = true; break; }
+        parts.push(code);
+        continue;
+      }
+      if (parts.length >= max) { trimmed = true; break; }
+      parts.push(code + " " + (st[i11][1] === st[i11][2]
+        ? String(st[i11][1]) : st[i11][1] + "–" + String(st[i11][2]).slice(2)));
     }
+    if (trimmed) parts.push("+more");
+    return parts.join(", ");
+  }
+
+  function hashStr(str) {
+    var h = 2166136261;
+    for (var i12 = 0; i12 < str.length; i12++) { h ^= str.charCodeAt(i12); h = Math.imul(h, 16777619); }
     return h >>> 0;
   }
 
@@ -1109,253 +886,251 @@
            String(d.getDate()).padStart(2, "0");
   }
 
-  function prettyDate() {
-    var months = ["January","February","March","April","May","June","July",
-                  "August","September","October","November","December"];
+  /* Numbered, not dated: implies a series with history, and compares cleanly. */
+  var LAUNCH = Date.UTC(2026, 8, 7);
+  function puzzleNo() {
     var d = new Date();
-    return months[d.getMonth()] + " " + d.getDate();
+    var today = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+    return Math.floor((today - LAUNCH) / 86400000) + 1;
   }
 
-  /* --------------------------------------------------- puzzle generation -- */
-  function buildPuzzle(seedStr) {
-    var rnd = mulberry32(hashStr(seedStr));
-    var best = null;
-    for (var attempt = 0; attempt < 80; attempt++) {
-      var a = POOL[Math.floor(rnd() * POOL.length)];
-      var b = POOL[Math.floor(rnd() * POOL.length)];
-      if (a === b) continue;
-      var path = shortestPath(a, b);
-      if (!path) continue;
-      var links = path.length - 2;
-      if (links < 1 || links > 3) continue;
-      if (links === 2) return { start: a, target: b, par: links, path: path };
-      if (!best || Math.abs(links - 2) < Math.abs(best.par - 2)) {
-        best = { start: a, target: b, par: links, path: path };
-      }
+  function msToMidnight() {
+    var now = new Date();
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+    return next - now;
+  }
+
+  function weekKey(d) {
+    var t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    t.setDate(t.getDate() - ((t.getDay() + 6) % 7));      // back to Monday
+    return t.getFullYear() + "W" + t.getMonth() + "." + t.getDate();
+  }
+
+  function daysBetween(aKey, bKey) {
+    var a = aKey.split("-"), b = bKey.split("-");
+    var A = Date.UTC(+a[0], +a[1] - 1, +a[2]), B = Date.UTC(+b[0], +b[1] - 1, +b[2]);
+    return Math.round((B - A) / 86400000);
+  }
+
+  /* ---------------------------------------------------------------- audio -- */
+  var soundOn = false;
+
+  function blip(freq, ms, type, gain) {
+    if (!soundOn) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      var ac = window.__mtcAc || (window.__mtcAc = new AC());
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(gain, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + ms / 1000);
+      o.connect(g); g.connect(ac.destination);
+      o.start(); o.stop(ac.currentTime + ms / 1000);
+    } catch (e) {}
+  }
+
+  var sfx = {
+    convert: function () { blip(880, 60, "square", .05); },
+    miss:    function () { blip(150, 140, "sine", .08); },
+    win:     function () {
+      [523, 659, 784].forEach(function (f, i) { setTimeout(function () { blip(f, 190, "triangle", .06); }, i * 110); });
     }
-    return best;
-  }
-
-  function randomPuzzle() { return buildPuzzle("free-" + Math.random()); }
-
-  /* ---------------------------------------------------------------- state -- */
-  var state = {
-    mode: "daily",
-    difficulty: "easy",
-    start: 0,
-    target: 0,
-    par: 0,
-    chain: [],
-    hints: 0,
-    done: false,
-    gaveUp: false,
-    lastAdded: -1,
-    pickingSlot: null
   };
 
-  var STORE_KEY = "nflc.stats.v2";
-  var DAY_KEY = "nflc.day.v2";
-  var DIFF_KEY = "nflc.diff.v1";
+  function buzz(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }
 
-  try {
-    var savedDiff = localStorage.getItem(DIFF_KEY);
-    if (savedDiff === "easy" || savedDiff === "medium" || savedDiff === "hard") {
-      state.difficulty = savedDiff;
-    }
-  } catch (e) {}
+  /* --------------------------------------------------------------- state -- */
+  var state = {
+    mode: "daily", difficulty: "easy",
+    start: 0, target: 0, par: 0,
+    chain: [], misses: [], curMisses: 0, downs: 4,
+    hints: 0, done: false, won: false,
+    lastAdded: -1, pickingSlot: null, focusInput: false
+  };
 
-  function saveDiff() {
-    try { localStorage.setItem(DIFF_KEY, state.difficulty); } catch (e) {}
-  }
+  var K_STATS = "mtc.stats.v1", K_DAY = "mtc.day.v1", K_DIFF = "mtc.diff.v1", K_SEEN = "mtc.seen.v1", K_SND = "mtc.snd.v1";
+
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+  var d0 = lsGet(K_DIFF);
+  if (d0 === "easy" || d0 === "medium" || d0 === "hard") state.difficulty = d0;
+  soundOn = lsGet(K_SND) === "1";
 
   function loadStats() {
     try {
-      var raw = localStorage.getItem(STORE_KEY);
+      var raw = lsGet(K_STATS);
       if (raw) return JSON.parse(raw);
     } catch (e) {}
-    return { played: 0, solved: 0, streak: 0, bestStreak: 0, parCount: 0, lastDay: null };
+    return { played: 0, wins: 0, streak: 0, best: 0, perfect: 0, lastDay: null, bye: null, dist: [0, 0, 0, 0] };
   }
 
-  function saveStats(s) {
-    try { localStorage.setItem(STORE_KEY, JSON.stringify(s)); } catch (e) {}
+  function saveStats(s) { lsSet(K_STATS, JSON.stringify(s)); }
+
+  /* Downs only where the user asked for them: the daily, and hard free play. */
+  function usesDowns() { return state.mode === "daily" || state.difficulty === "hard"; }
+
+  function detail() {
+    if (state.mode === "daily") return "easy";
+    if (state.done) return "easy";
+    return state.difficulty;
   }
 
-  function loadDay(key) {
-    try {
-      var raw = localStorage.getItem(DAY_KEY);
-      if (!raw) return null;
-      var o = JSON.parse(raw);
-      return o && o.day === key ? o : null;
-    } catch (e) { return null; }
-  }
-
-  function saveDay(key, payload) {
-    try {
-      payload.day = key;
-      localStorage.setItem(DAY_KEY, JSON.stringify(payload));
-    } catch (e) {}
-  }
-
-  /* -------------------------------------------------------------- render -- */
+  /* ---------------------------------------------------------------- board -- */
   var boardEl = document.getElementById("board");
   var outcomeSlot = document.getElementById("outcome-slot");
 
-  function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-    });
-  }
-
-  function plateHTML(idx, role, tagText, swappable) {
-    var tag = tagText
-      ? '<span class="plate-tag">' + esc(tagText) + "</span>"
-      : "";
-    var swap = swappable
-      ? '<button class="plate-swap" data-swap="' + role + '">Change</button>'
-      : "";
+  function zoneHTML(idx, kind) {
     var d = detail();
     var meta = esc(P[idx].p || "—");
-    if (d !== "hard") meta += " · " + esc(teamSummary(idx, 4, d === "easy"));
-
-    return '<div class="plate" data-role="' + role + '">' +
-      '<span class="rail"></span>' +
-      '<div class="plate-body">' +
-        '<div class="plate-name">' + esc(P[idx].n) + "</div>" +
-        '<div class="plate-meta">' + meta + "</div>" +
-      "</div>" + tag + swap +
-    "</div>";
+    if (d !== "hard") meta += " · " + esc(teamSummary(idx, 3, d === "easy"));
+    var swap = (state.mode === "free" && !state.done)
+      ? '<button class="swapbtn" data-swap="' + kind + '">Change</button>' : "";
+    return '<div class="zone zone-' + kind + '">' +
+      '<span class="zone-tag">' + (kind === "start" ? "Start" : "Target") + "</span>" +
+      '<div class="who"><div class="who-name">' + esc(P[idx].n) + "</div>" +
+      '<div class="who-meta">' + meta + "</div></div>" + swap + "</div>";
   }
 
-  function connHTML(a, b, isNew) {
-    var stints = sharedStints(a, b);
-    if (!stints.length) {
-      return '<div class="conn is-gap"><span class="conn-empty">not yet linked</span></div>';
-    }
-    var d = detail();
-    var cls = "conn" + (isNew ? " is-new" : "");
-
+  function segHTML(a, b, isNew) {
+    var d = detail(), stints = sharedStints(a, b);
+    if (!stints.length) return "";
     if (d === "hard") {
-      return '<div class="' + cls + '">' +
-        '<span class="chip chip-blind">LINKED</span>' +
-        '<span class="conn-text">shared a roster</span>' +
-      "</div>";
+      return '<div class="seg"><span class="chip chip-blind' + (isNew ? " is-new" : "") + '">Linked</span>' +
+             '<span class="seg-txt">shared a roster</span></div>';
     }
-
-    var s0 = stints[0];
-    var code = TEAMS[s0.team];
-    var fr = franchise(code, s0.to);
-    var extra = stints.length > 1 ? " +" + (stints.length - 1) + " more" : "";
-    var years = "";
+    var s0 = stints[0], code = TEAMS[s0.team], fr = franchise(code, s0.to);
+    var yrs = "";
     if (d === "easy") {
       var span = s0.from === s0.to ? String(s0.from) : s0.from + "–" + s0.to;
-      years = ' <span class="conn-years">' + span + "</span>" + esc(extra);
+      yrs = ' <span class="seg-yrs">' + span + "</span>";
     }
-    return '<div class="' + cls + '">' +
-      '<span class="chip" style="--tc:' + fr.color + ";--tc-ink:" + inkFor(fr.color) + '">' +
-        esc(code) + "</span>" +
-      '<span class="conn-text"><b>' + esc(fr.short) + "</b>" + years + "</span>" +
-    "</div>";
+    return '<div class="seg" style="--seg-c:' + fr.color + ";--seg-ink:" + inkFor(fr.color) + '">' +
+      '<span class="chip' + (isNew ? " is-new" : "") + '">' + esc(code) + "</span>" +
+      '<span class="seg-txt"><b>' + esc(fr.short) + "</b>" + yrs + "</span></div>";
   }
 
-  function render() {
-    var links = state.chain.length;
-    var parClass = "";
-    if (state.done && !state.gaveUp) parClass = links === state.par ? " is-par" : (links > state.par ? " is-over" : "");
+  function plateHTML(idx, isNew) {
+    var d = detail();
+    var meta = esc(P[idx].p || "—");
+    if (d !== "hard") meta += " · " + esc(teamSummary(idx, 3, d === "easy"));
+    return '<div class="plate' + (isNew ? " is-new" : "") + '">' +
+      '<div class="who"><div class="who-name">' + esc(P[idx].n) + "</div>" +
+      '<div class="who-meta">' + meta + "</div></div></div>";
+  }
+
+  function downsHTML(losing) {
+    if (!usesDowns()) return "";
+    var h = '<div class="downbar"><span class="par-k">Down</span><div class="downs">';
+    for (var i13 = 0; i13 < 4; i13++) {
+      var cls = "pip" + (i13 >= state.downs ? " spent" : "");
+      if (losing && i13 === state.downs) cls = "pip losing";
+      h += '<span class="' + cls + '"></span>';
+    }
+    return h + "</div></div>";
+  }
+
+  function render(opts) {
+    opts = opts || {};
+    var last = state.chain.length ? state.chain[state.chain.length - 1] : state.start;
 
     var slug = state.mode === "daily"
-      ? "Daily · " + prettyDate()
+      ? "Daily <b>#" + puzzleNo() + "</b>"
       : "Free play";
 
-    var html = '<div class="board-head">' +
-      '<span class="slug">' + esc(slug) + "</span>" +
-      '<div class="readouts">' +
-        '<div class="readout"><span class="readout-k">Links</span>' +
-          '<span class="readout-v' + parClass + '">' + links + "</span></div>" +
-        '<div class="readout"><span class="readout-k">Par</span>' +
-          '<span class="readout-v">' + state.par + "</span></div>" +
-        (state.hints ? '<div class="readout"><span class="readout-k">Hints</span>' +
-          '<span class="readout-v">' + state.hints + "</span></div>" : "") +
+    var h = '<div class="board-head"><span class="slug">' + slug + "</span>" +
+      '<div class="headright">' + downsHTML(opts.losing) +
+      '<div class="par-read"><span class="par-k">Par</span><span class="par-v">' + state.par + "</span></div>" +
       "</div></div>";
 
-    var canSwap = state.mode === "free" && !state.done;
-
-    html += '<div class="chain">';
-    html += plateHTML(state.start, "start", "Start", canSwap);
+    h += '<div class="chain">' + zoneHTML(state.start, "start");
 
     var prev = state.start;
-    for (var i = 0; i < state.chain.length; i++) {
-      var cur = state.chain[i];
-      html += connHTML(prev, cur, cur === state.lastAdded);
-      html += plateHTML(cur, "link", null, false);
+    for (var i14 = 0; i14 < state.chain.length; i14++) {
+      var cur = state.chain[i14], isNew = cur === state.lastAdded;
+      h += '<div class="row' + (isNew ? "" : " is-in") + '" data-row="' + i14 + '"><div class="row-inner">' +
+        segHTML(prev, cur, isNew) + plateHTML(cur, isNew) + "</div></div>";
       prev = cur;
     }
 
-    html += connHTML(prev, state.target, state.done && !state.gaveUp);
-    html += plateHTML(state.target, "target", "Target", canSwap);
-    html += "</div>";
-
-    if (!state.done) {
-      html += '<div class="search" id="search">' +
-        '<label class="search-label" for="q">Next teammate of ' +
-          esc(P[prev].n) + "</label>" +
-        '<input class="search-input" id="q" type="text" autocomplete="off" ' +
-          'placeholder="Type a player&rsquo;s name…" spellcheck="false">' +
-        '<div class="search-msg" id="msg"></div>' +
-      "</div>";
-
-      html += '<div class="actions">' +
-        '<button class="btn" id="btn-hint">Hint</button>' +
-        (state.chain.length ? '<button class="btn" id="btn-undo">Undo</button>' : "") +
-        '<button class="btn" id="btn-give">Give up</button>' +
-        (state.mode === "free" ? '<button class="btn btn-key" id="btn-shuffle">New pair</button>' : "") +
-      "</div>";
+    if (state.done) {
+      h += segHTML(prev, state.target, false);
     } else {
-      html += '<div class="actions">' +
-        (state.mode === "free"
-          ? '<button class="btn btn-key" id="btn-shuffle">New pair</button>'
-          : '<button class="btn" id="btn-free">Try free play</button>') +
-      "</div>";
+      var remaining = state.par - state.chain.length;
+      if (remaining > 0) {
+        for (var sk = 0; sk < remaining; sk++) {
+          h += '<div class="socket' + (sk === 0 ? " is-next" : "") + '">' +
+            "<span>" + (sk === 0 ? "your move" : "link " + (state.chain.length + sk + 1)) + "</span><span>?</span></div>";
+        }
+      } else {
+        h += '<div class="socket is-next is-over"><span>over par</span><span>?</span></div>';
+      }
+      h += '<div class="marker-line' + (opts.advance ? " advance" : "") + '"></div>';
     }
 
-    boardEl.innerHTML = html;
-    wireBoard();
+    h += zoneHTML(state.target, "end") + "</div>";
+
     if (!state.done) {
+      h += '<div class="search" id="search">' +
+        '<label class="search-label" for="q">Next teammate of ' + esc(P[last].n) + "</label>" +
+        '<input class="search-input" id="q" type="text" autocomplete="off" spellcheck="false" ' +
+          'placeholder="Type a player&rsquo;s name…">' +
+        '<div class="verdict" id="msg"></div></div>';
+
+      h += '<div class="actions">' +
+        '<button class="btn" id="btn-hint">Hint</button>' +
+        (state.chain.length && !usesDowns() ? '<button class="btn" id="btn-undo">Undo</button>' : "") +
+        (state.mode === "free" ? '<button class="btn btn-key" id="btn-shuffle">New drive</button>' : "") +
+        '<button class="quit" id="btn-give">Give up</button></div>';
+    } else if (state.mode === "free") {
+      h += '<div class="actions"><button class="btn btn-key" id="btn-shuffle">New drive</button></div>';
+    }
+
+    boardEl.innerHTML = h;
+    wire();
+
+    if (opts.advance) {
+      var row = boardEl.querySelector('[data-row="' + (state.chain.length - 1) + '"]');
+      if (row) requestAnimationFrame(function () { row.classList.add("is-in"); });
+    }
+    if (!state.done && state.focusInput) {
       var q = document.getElementById("q");
-      if (q && state.focusInput) q.focus();
+      if (q) q.focus();
     }
   }
 
-  /* -------------------------------------------------------------- search -- */
-  var activeResult = -1, currentResults = [];
+  /* --------------------------------------------------------------- search -- */
+  var results = [], active = -1;
 
   function closeResults() {
     var box = document.getElementById("results");
     if (box) box.remove();
-    activeResult = -1;
-    currentResults = [];
+    results = []; active = -1;
   }
 
   function showResults(list) {
     closeResults();
     if (!list.length) return;
-    var searchEl = document.getElementById("search");
+    var d = detail();
     var box = document.createElement("div");
     box.className = "results";
     box.id = "results";
     var h = "";
-    for (var i = 0; i < list.length; i++) {
-      var idx = list[i];
-      h += '<button class="result" data-idx="' + idx + '">' +
+    for (var i15 = 0; i15 < list.length; i15++) {
+      var idx = list[i15];
+      /* On hard the career span disambiguates same-name players without
+         naming a team — recall stays the game, recognition does not. */
+      var meta = d === "hard" ? careerSpan(idx) : teamSummary(idx, 3, d === "easy");
+      h += '<button class="result' + (i15 === 0 ? " is-active" : "") + '" data-idx="' + idx + '">' +
         '<span class="result-name">' + esc(P[idx].n) + "</span>" +
         '<span class="result-pos">' + esc(P[idx].p || "—") + "</span>" +
-        '<span class="result-teams">' + esc(teamSummary(idx, 3, detail() === "easy")) + "</span>" +
-      "</button>";
+        '<span class="result-meta">' + esc(meta) + "</span></button>";
     }
     box.innerHTML = h;
-    searchEl.appendChild(box);
-    currentResults = list;
-    activeResult = -1;
-
+    document.getElementById("search").appendChild(box);
+    results = list;
+    active = 0;                       // Enter always has a visible target
     box.addEventListener("mousedown", function (e) {
       var btn = e.target.closest(".result");
       if (!btn) return;
@@ -1365,86 +1140,20 @@
   }
 
   function highlight(delta) {
-    if (!currentResults.length) return;
-    activeResult = (activeResult + delta + currentResults.length) % currentResults.length;
+    if (!results.length) return;
+    active = (active + delta + results.length) % results.length;
     var nodes = document.querySelectorAll("#results .result");
-    for (var i = 0; i < nodes.length; i++) {
-      nodes[i].classList.toggle("is-active", i === activeResult);
-    }
-    if (nodes[activeResult]) nodes[activeResult].scrollIntoView({ block: "nearest" });
+    for (var i16 = 0; i16 < nodes.length; i16++) nodes[i16].classList.toggle("is-active", i16 === active);
+    if (nodes[active]) nodes[active].scrollIntoView({ block: "nearest" });
   }
 
-  function setMsg(text, kind) {
+  function setMsg(html, kind) {
     var m = document.getElementById("msg");
     if (!m) return;
-    m.textContent = text || "";
-    m.className = "search-msg" + (kind ? " " + kind : "");
+    m.innerHTML = html || "";
+    m.className = "verdict" + (kind ? " " + kind : "");
   }
 
-  function rejectInput(text) {
-    var el = document.getElementById("search");
-    if (el) {
-      el.classList.add("is-bad");
-      setTimeout(function () { el.classList.remove("is-bad"); }, 340);
-    }
-    setMsg(text, "bad");
-  }
-
-  /* Slot picking (free play: replacing start/target). */
-  function choose(idx) {
-    if (state.pickingSlot) {
-      var other = state.pickingSlot === "start" ? state.target : state.start;
-      if (idx === other) { rejectInput("Pick a different player."); return; }
-      if (state.pickingSlot === "start") state.start = idx; else state.target = idx;
-      state.pickingSlot = null;
-      state.chain = [];
-      state.hints = 0;
-      state.done = false;
-      state.gaveUp = false;
-      var path = shortestPath(state.start, state.target);
-      state.par = path ? path.length - 2 : 0;
-      state.focusInput = false;
-      render();
-      if (!path) setMsg("No roster path between these two.", "bad");
-      else if (state.par <= 0) finish(true);
-      return;
-    }
-
-    var last = state.chain.length ? state.chain[state.chain.length - 1] : state.start;
-
-    if (idx === state.start || state.chain.indexOf(idx) !== -1) {
-      rejectInput(P[idx].n + " is already in the chain.");
-      return;
-    }
-
-    if (idx === state.target) {
-      if (areTeammates(last, state.target)) {
-        state.lastAdded = -1;
-        finish(true);
-        return;
-      }
-      rejectInput(P[idx].n + " never shared a roster with " + P[last].n + ".");
-      return;
-    }
-
-    if (!areTeammates(last, idx)) {
-      rejectInput(P[idx].n + " never shared a roster with " + P[last].n + ".");
-      return;
-    }
-
-    state.chain.push(idx);
-    state.lastAdded = idx;
-    closeResults();
-
-    if (areTeammates(idx, state.target)) { finish(true); return; }
-
-    state.focusInput = true;
-    render();
-    var lbl = linkLabel(last, idx);
-    setMsg(lbl ? "Linked through " + lbl + "." : "Linked — they shared a roster.", "good");
-  }
-
-  /* Empty on hard, where naming the team would give away what is hidden. */
   function linkLabel(a, b) {
     var st = sharedStints(a, b);
     if (!st.length) return "";
@@ -1456,98 +1165,348 @@
     return fr.short + " " + yrs;
   }
 
-  /* -------------------------------------------------------------- finish -- */
-  function finish(won) {
-    state.done = true;
-    state.gaveUp = !won;
-    state.lastAdded = -1;
-    render();
-    renderOutcome(won);
-    if (won) celebrate(chainColors());
-    if (state.mode === "daily") {
-      recordDaily(won);
-      saveDay(todayKey(), {
-        chain: state.chain, hints: state.hints, done: true, won: won
-      });
+  function reject(text) {
+    var el = document.getElementById("search");
+    var q = document.getElementById("q");
+    if (el) {
+      el.classList.remove("is-bad");
+      void el.offsetWidth;
+      el.classList.add("is-bad");
+      setTimeout(function () { el.classList.remove("is-bad"); }, 360);
+      var flag = document.createElement("span");
+      flag.className = "pflag";
+      el.appendChild(flag);
+      setTimeout(function () { flag.remove(); }, 480);
     }
-    // land the hero at the top of the view so the win fills the screen
-    outcomeSlot.scrollIntoView({ behavior: "smooth", block: won ? "start" : "nearest" });
+    sfx.miss();
+    buzz([8, 40, 8]);
+    // keep the near-miss so it can be edited rather than retyped
+    if (q) { q.focus(); try { q.setSelectionRange(0, q.value.length); } catch (e) {} }
+    setMsg(text, "bad");
+  }
+
+  function choose(idx) {
+    if (state.pickingSlot) {
+      var other = state.pickingSlot === "start" ? state.target : state.start;
+      if (idx === other) { reject("<b>No good</b> pick a different player."); return; }
+      if (state.pickingSlot === "start") state.start = idx; else state.target = idx;
+      state.pickingSlot = null;
+      var path = shortestPath(state.start, state.target);
+      resetDrive(path ? path.length - 2 : 0);
+      closeResults();
+      render();
+      if (!path) setMsg("No roster path between those two.", "bad");
+      else if (state.par <= 0) finish(true);
+      return;
+    }
+
+    var last = state.chain.length ? state.chain[state.chain.length - 1] : state.start;
+
+    if (idx === state.start || state.chain.indexOf(idx) !== -1) {
+      reject("<b>No good</b> already in the chain.");
+      return;
+    }
+
+    var isTarget = idx === state.target;
+    if (!areTeammates(last, idx)) {
+      loseDown();
+      var extra = usesDowns()
+        ? (state.downs > 0
+            ? state.downs + " down" + (state.downs === 1 ? "" : "s") + " left."
+            : "Turnover on downs.")
+        : "never shared a roster with " + esc(P[last].n) + ".";
+      reject("<b>No good</b> " + extra);
+      if (usesDowns() && state.downs <= 0) setTimeout(function () { finish(false); }, 620);
+      return;
+    }
+
+    closeResults();
+    if (isTarget) { state.lastAdded = -1; finish(true); return; }
+
+    state.chain.push(idx);
+    state.misses.push(state.curMisses);
+    state.curMisses = 0;
+    state.downs = 4;
+    state.lastAdded = idx;
+
+    sfx.convert();
+    buzz(12);
+
+    if (areTeammates(idx, state.target)) {
+      state.misses.push(0);
+      finish(true);
+      return;
+    }
+
+    state.focusInput = true;
+    render({ advance: true });
+    var lbl = linkLabel(last, idx);
+    setMsg(usesDowns()
+      ? "<b>First down</b> " + (lbl ? "through " + esc(lbl) + " — " : "") + "chains move, four fresh downs."
+      : "<b>Linked</b> " + (lbl ? "through " + esc(lbl) + "." : "they shared a roster."), "good");
+  }
+
+  function loseDown() {
+    state.curMisses++;
+    if (!usesDowns()) return;
+    state.downs = Math.max(0, state.downs - 1);
+    var pips = boardEl.querySelectorAll(".pip");
+    if (pips[state.downs]) pips[state.downs].classList.add("losing");
+  }
+
+  /* -------------------------------------------------------------- outcome -- */
+  function chainColors() {
+    var seq = [state.start].concat(state.chain, [state.target]), out = [];
+    for (var i17 = 0; i17 < seq.length - 1; i17++) {
+      var st = sharedStints(seq[i17], seq[i17 + 1]);
+      if (st.length) out.push(franchise(TEAMS[st[0].team], st[0].to).color);
+    }
+    if (!out.length) out = ["#2E7FE8"];
+    out.push("#FFD400");
+    return out;
+  }
+
+  function isPerfect() {
+    return state.won && state.chain.length === state.par && state.hints === 0 &&
+           state.misses.reduce(function (a, b) { return a + b; }, 0) === 0;
+  }
+
+  function shareText() {
+    var flags = state.misses.reduce(function (a, b) { return a + b; }, 0) + state.curMisses;
+    var strip = "🔵";
+    if (state.won) {
+      var perfect = isPerfect();
+      for (var i18 = 0; i18 < state.chain.length; i18++) {
+        strip += perfect ? "🏈" : (state.misses[i18] ? "🟨" : "🟩");
+      }
+      strip += "🟡";
+    } else {
+      for (var i19 = 0; i19 < state.chain.length; i19++) strip += state.misses[i19] ? "🟨" : "🟩";
+      strip += "🟥";
+    }
+    var head = state.mode === "daily" ? "Move The Chains #" + puzzleNo() : "Move The Chains — free play";
+    var line3 = state.won
+      ? state.chain.length + " link" + (state.chain.length === 1 ? "" : "s") + " · par " + state.par
+      : "turnover · par " + state.par;
+    if (flags) line3 += " · 🚩" + flags;
+    if (state.hints) line3 += " · 💡" + state.hints;
+    var out = head + "\n" + strip + "\n" + line3;
+    var st = loadStats();
+    if (state.mode === "daily" && st.streak > 1) out += "\n🔥 " + st.streak;
+    return out;
   }
 
   function recordDaily(won) {
     var st = loadStats();
-    var key = todayKey();
-    if (st.lastDay === key) return;
+    var today = todayKey();
+    if (st.lastDay === today) return st;
+
+    var gapped = st.lastDay ? daysBetween(st.lastDay, today) > 1 : false;
+    var wk = weekKey(new Date());
+    var breaks = !won || gapped;
+
+    if (breaks && st.streak > 0 && st.bye !== wk) {
+      st.bye = wk;                                   // bye week: one forgiven break
+      if (won) st.streak++;
+    } else if (breaks) {
+      st.streak = won ? 1 : 0;
+    } else {
+      st.streak++;
+    }
+
     st.played++;
     if (won) {
-      st.solved++;
-      st.streak = st.streak + 1;
-      if (st.streak > st.bestStreak) st.bestStreak = st.streak;
-      if (state.chain.length === state.par && state.hints === 0) st.parCount++;
-    } else {
-      st.streak = 0;
+      st.wins++;
+      if (isPerfect()) st.perfect++;
+      var over = Math.min(3, Math.max(0, state.chain.length - state.par));
+      st.dist[over] = (st.dist[over] || 0) + 1;
     }
-    st.lastDay = key;
+    if (st.streak > st.best) st.best = st.streak;
+    st.lastDay = today;
     saveStats(st);
+    return st;
   }
 
-  /* The colours of the teams you actually routed through. */
-  function chainColors() {
-    var seq = [state.start].concat(state.chain, [state.target]), out = [];
-    for (var i = 0; i < seq.length - 1; i++) {
-      var st = sharedStints(seq[i], seq[i + 1]);
-      if (st.length) out.push(franchise(TEAMS[st[0].team], st[0].to).color);
+  var cdTimer = null;
+
+  function renderOutcome() {
+    var won = state.won;
+    var perfect = isPerfect();
+    var links = state.chain.length;
+    var flags = state.misses.reduce(function (a, b) { return a + b; }, 0) + state.curMisses;
+
+    var title = won ? (perfect ? "Touchdown" : "Chain complete") : "Turnover";
+    var cls = "outcome " + (won ? (perfect ? "win perfect" : "win") : "lose");
+
+    var h = '<div class="' + cls + '"><div class="wincard">' +
+      '<div class="win-title">' + title + "</div>" +
+      '<div class="win-sub"><span><b>' + links + "</b>link" + (links === 1 ? "" : "s") + "</span>" +
+      "<span><b>" + state.par + "</b>par</span>" +
+      (flags ? "<span><b>" + flags + "</b>flag" + (flags === 1 ? "" : "s") + "</span>" : "") +
+      (state.hints ? "<span><b>" + state.hints + "</b>hint" + (state.hints === 1 ? "" : "s") + "</span>" : "") +
+      "</div></div><div class=\"outcome-body\">";
+
+    /* On a loss, show a shortest route so the player learns something. */
+    if (!won) {
+      var path = shortestPath(state.start, state.target);
+      if (path) {
+        h += '<div class="route">';
+        for (var i20 = 0; i20 < path.length; i20++) {
+          h += '<div class="route-row" style="--d:' + (i20 * 90) + 'ms">' +
+            '<span class="route-name">' + esc(P[path[i20]].n) + "</span>";
+          if (i20 < path.length - 1) {
+            var st1 = sharedStints(path[i20], path[i20 + 1]);
+            if (st1.length) {
+              var fr1 = franchise(TEAMS[st1[0].team], st1[0].to);
+              var y1 = st1[0].from === st1[0].to ? String(st1[0].from) : st1[0].from + "–" + st1[0].to;
+              h += '<span class="route-via">↓ ' + esc(fr1.short) + " " + y1 + "</span>";
+            }
+          }
+          h += "</div>";
+        }
+        h += "</div>";
+      }
     }
-    if (!out.length) out = ["#2C6FB5"];
-    out.push("#F2C230");
-    return out;
+
+    h += '<div class="share" id="share">' + esc(shareText()) + "</div>" +
+      '<div class="actions" style="padding:0">' +
+        '<button class="btn btn-key" id="btn-copy">Share result</button>' +
+      "</div>";
+
+    if (state.mode === "daily") {
+      var st2 = loadStats();
+      h += '<div class="countdown"><span class="cd-k">Next drive</span>' +
+           '<span class="cd-v" id="cd">--:--:--</span></div>';
+      h += '<div class="statgrid">' +
+        '<div class="stat"><div class="stat-v">' + st2.played + '</div><div class="stat-k">Played</div></div>' +
+        '<div class="stat"><div class="stat-v">' + (st2.played ? Math.round(st2.wins / st2.played * 100) : 0) + '</div><div class="stat-k">Win %</div></div>' +
+        '<div class="stat"><div class="stat-v">' + st2.streak + '</div><div class="stat-k">Streak</div></div>' +
+        '<div class="stat"><div class="stat-v">' + st2.perfect + '</div><div class="stat-k">Touchdowns</div></div>' +
+      "</div>";
+
+      var dist = st2.dist || [0, 0, 0, 0];
+      var maxd = Math.max(1, dist[0], dist[1], dist[2], dist[3]);
+      h += '<div class="dist">';
+      for (var dz = 0; dz < 4; dz++) {
+        var lbl = dz === 0 ? "par" : "+" + dz + (dz === 3 ? "+" : "");
+        var pct = Math.round(dist[dz] / maxd * 100);
+        h += '<div class="dist-row"><span class="dist-k">' + lbl + "</span>" +
+          '<span class="dist-bar' + (dist[dz] === maxd && dist[dz] > 0 ? " top" : "") +
+          '" style="width:' + Math.max(pct, 3) + '%"></span>' +
+          '<span class="dist-n">' + dist[dz] + "</span></div>";
+      }
+      h += "</div>";
+    }
+
+    h += "</div></div>";
+    outcomeSlot.innerHTML = h;
+
+    var copy = document.getElementById("btn-copy");
+    if (copy) copy.addEventListener("click", function () {
+      var text = shareText();
+      function ok() { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Share result"; }, 1600); }
+      if (navigator.share) {
+        navigator.share({ text: text }).then(function () {}, function () { clip(); });
+      } else clip();
+      function clip() {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(ok, manual);
+        } else manual();
+      }
+      function manual() {
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand("copy"); ok(); }
+        catch (e) { copy.textContent = "Select the text above"; }
+        ta.remove();
+      }
+    });
+
+    if (cdTimer) clearInterval(cdTimer);
+    var cd = document.getElementById("cd");
+    if (cd) {
+      var tick = function () {
+        var ms = msToMidnight();
+        if (ms <= 0) { cd.textContent = "00:00:00"; return; }
+        var s = Math.floor(ms / 1000);
+        cd.textContent = String(Math.floor(s / 3600)).padStart(2, "0") + ":" +
+          String(Math.floor(s / 60) % 60).padStart(2, "0") + ":" +
+          String(s % 60).padStart(2, "0");
+      };
+      tick();
+      cdTimer = setInterval(tick, 1000);
+    }
   }
 
-  function celebrate(colors) {
+  function finish(won) {
+    state.done = true;
+    state.won = won;
+    state.lastAdded = -1;
+    render();
+
+    if (state.mode === "daily") {
+      recordDaily(won);
+      lsSet(K_DAY, JSON.stringify({
+        day: todayKey(), chain: state.chain, misses: state.misses,
+        hints: state.hints, won: won
+      }));
+    }
+
+    if (won) {
+      // sweep the finished drive before the card lands — staggered beats read
+      // as a sequence of rewards where a single reveal reads as one event
+      var nodes = boardEl.querySelectorAll(".plate, .zone");
+      for (var i21 = 0; i21 < nodes.length; i21++) {
+        nodes[i21].style.animationDelay = (i21 * 60) + "ms";
+        nodes[i21].classList.add("sweep");
+      }
+      setTimeout(function () {
+        renderOutcome();
+        confetti(chainColors());
+        sfx.win();
+        outcomeSlot.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, nodes.length * 60 + 120);
+    } else {
+      renderOutcome();
+      outcomeSlot.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
+  function confetti(colors) {
     if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     var old = document.getElementById("confetti");
     if (old) old.remove();
-
     var cv = document.createElement("canvas");
     cv.id = "confetti";
     cv.setAttribute("aria-hidden", "true");
     document.body.appendChild(cv);
-
     var ctx = cv.getContext("2d");
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var W = window.innerWidth, H = window.innerHeight;
     cv.width = W * dpr; cv.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    var bits = [], count = Math.max(70, Math.min(170, Math.round(W / 6)));
-    for (var i = 0; i < count; i++) {
+    var bits = [], n = Math.max(70, Math.min(160, Math.round(W / 6)));
+    for (var i22 = 0; i22 < n; i22++) {
       bits.push({
-        x: Math.random() * W,
-        y: -20 - Math.random() * H * .6,
-        vx: (Math.random() - .5) * 1.7,
-        vy: 2.2 + Math.random() * 3.6,
-        w: 5 + Math.random() * 5,
-        h: 8 + Math.random() * 7,
-        rot: Math.random() * Math.PI,
-        vr: (Math.random() - .5) * .24,
-        c: colors[i % colors.length]
+        x: Math.random() * W, y: -20 - Math.random() * H * .6,
+        vx: (Math.random() - .5) * 1.7, vy: 2.2 + Math.random() * 3.5,
+        w: 5 + Math.random() * 5, h: 8 + Math.random() * 7,
+        rot: Math.random() * Math.PI, vr: (Math.random() - .5) * .24,
+        c: colors[i22 % colors.length]
       });
     }
-
     var t0 = performance.now(), DUR = 3200, FADE = 800;
     function frame(now) {
       var el = now - t0;
       if (el > DUR) { cv.remove(); return; }
       ctx.clearRect(0, 0, W, H);
       ctx.globalAlpha = el > DUR - FADE ? (DUR - el) / FADE : 1;
-      for (var j = 0; j < bits.length; j++) {
-        var b = bits[j];
+      for (var j6 = 0; j6 < bits.length; j6++) {
+        var b = bits[j6];
         b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.vy += .045;
-        ctx.save();
-        ctx.translate(b.x, b.y);
-        ctx.rotate(b.rot);
-        ctx.fillStyle = b.c;
-        ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+        ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.rot);
+        ctx.fillStyle = b.c; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
         ctx.restore();
       }
       requestAnimationFrame(frame);
@@ -1555,127 +1514,8 @@
     requestAnimationFrame(frame);
   }
 
-  /* The finished chain, stamped in one link at a time. */
-  function replayHTML() {
-    var seq = [state.start].concat(state.chain, [state.target]);
-    var h = '<div class="replay">', d = 0;
-    for (var i = 0; i < seq.length; i++) {
-      var endCls = (i === 0 || i === seq.length - 1) ? " is-end" : "";
-      h += '<span class="replay-node' + endCls + '" style="--d:' + d + 'ms">' +
-           esc(P[seq[i]].n) + "</span>";
-      d += 120;
-      if (i < seq.length - 1) {
-        var st = sharedStints(seq[i], seq[i + 1]);
-        if (st.length) {
-          var code = TEAMS[st[0].team], fr = franchise(code, st[0].to);
-          var yrs = st[0].from === st[0].to ? String(st[0].from) : st[0].from + "–" + st[0].to;
-          h += '<span class="replay-link" style="--d:' + d + 'ms">' +
-            '<span class="replay-chip" style="--tc:' + fr.color + ";--tc-ink:" +
-              inkFor(fr.color) + '">' + esc(code) + "</span>" +
-            '<span class="replay-yrs">' + yrs + "</span></span>";
-        }
-        d += 120;
-      }
-    }
-    return h + "</div>";
-  }
-
-  function shareText() {
-    var linkEmoji = state.chain.length === state.par ? "🏈" : "🟡";
-    var line = "";
-    for (var i = 0; i < state.chain.length; i++) line += linkEmoji;
-    var head = state.mode === "daily" ? "NFL Connector — " + prettyDate() : "NFL Connector";
-    return head + "\n" +
-      P[state.start].n + " → " + P[state.target].n + "\n" +
-      line + " " + state.chain.length + " link" + (state.chain.length === 1 ? "" : "s") +
-      " (par " + state.par + ")" +
-      (state.hints ? " · " + state.hints + " hint" + (state.hints === 1 ? "" : "s") : "");
-  }
-
-  function renderOutcome(won) {
-    var st = loadStats();
-    var links = state.chain.length;
-    var perfect = won && links === state.par && state.hints === 0;
-    var html;
-
-    if (won) {
-      html = '<div class="outcome win' + (perfect ? " perfect" : "") + '">' +
-        '<div class="hero">' +
-          '<div class="hero-title">' + (perfect ? "Perfect chain" : "Chain complete") + "</div>" +
-          '<div class="hero-score">' +
-            "<span><b>" + links + "</b>link" + (links === 1 ? "" : "s") + "</span>" +
-            '<span class="hero-dot"></span>' +
-            "<span><b>" + state.par + "</b>par</span>" +
-            (state.hints ? '<span class="hero-dot"></span><span><b>' + state.hints +
-              "</b>hint" + (state.hints === 1 ? "" : "s") + "</span>" : "") +
-          "</div>" +
-        "</div>" +
-        '<div class="outcome-body">' + replayHTML();
-    } else {
-      html = '<div class="outcome lose">' +
-        '<div class="outcome-head">' +
-          '<span class="outcome-title">Chain broken</span>' +
-          '<span class="outcome-sub">Here is one shortest route.</span>' +
-        "</div><div class=\"outcome-body\">";
-    }
-
-    if (!won) {
-      var path = shortestPath(state.start, state.target);
-      if (path) {
-        var names = [];
-        for (var i = 1; i < path.length - 1; i++) names.push(P[path[i]].n);
-        html += '<div class="share-box">' + esc(P[state.start].n) + "\n";
-        for (var j = 0; j < names.length; j++) {
-          html += "  ↓ " + esc(linkLabel(path[j], path[j + 1])) + "\n" +
-                  esc(names[j]) + "\n";
-        }
-        html += "  ↓ " + esc(linkLabel(path[path.length - 2], state.target)) + "\n" +
-                esc(P[state.target].n) + "</div>";
-      }
-    } else {
-      html += '<div class="share-box" id="share">' + esc(shareText()) + "</div>" +
-        '<div class="actions" style="padding:0">' +
-          '<button class="btn btn-key" id="btn-copy">Copy result</button>' +
-        "</div>";
-    }
-
-    if (state.mode === "daily") {
-      html += '<div class="statgrid">' +
-        '<div class="stat"><div class="stat-v">' + st.played + '</div><div class="stat-k">Played</div></div>' +
-        '<div class="stat"><div class="stat-v">' + st.solved + '</div><div class="stat-k">Solved</div></div>' +
-        '<div class="stat"><div class="stat-v">' + st.streak + '</div><div class="stat-k">Streak</div></div>' +
-        '<div class="stat"><div class="stat-v">' + st.parCount + '</div><div class="stat-k">Par runs</div></div>' +
-      "</div>";
-    }
-
-    html += "</div></div>";
-    outcomeSlot.innerHTML = html;
-
-    var copy = document.getElementById("btn-copy");
-    if (copy) {
-      copy.addEventListener("click", function () {
-        var text = shareText();
-        function done() { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Copy result"; }, 1600); }
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(done, fallback);
-        } else fallback();
-        function fallback() {
-          var ta = document.createElement("textarea");
-          ta.value = text;
-          ta.style.position = "fixed";
-          ta.style.opacity = "0";
-          document.body.appendChild(ta);
-          ta.select();
-          try { document.execCommand("copy"); done(); }
-          catch (e) { copy.textContent = "Select the text above"; }
-          ta.remove();
-        }
-      });
-    }
-  }
-
-  /* ---------------------------------------------------------------- wire -- */
-  function wireBoard() {
+  /* ----------------------------------------------------------------- wire -- */
+  function wire() {
     var q = document.getElementById("q");
     if (q) {
       q.addEventListener("input", function () {
@@ -1687,9 +1527,11 @@
         else if (e.key === "ArrowUp") { e.preventDefault(); highlight(-1); }
         else if (e.key === "Enter") {
           e.preventDefault();
-          var pick = activeResult >= 0 ? currentResults[activeResult] : currentResults[0];
-          if (pick !== undefined) { q.value = ""; choose(pick); }
-        } else if (e.key === "Escape") { closeResults(); }
+          // don't clear here: a rejected guess has to survive so it can be
+          // edited rather than retyped. A converted link re-renders the input.
+          var pick = active >= 0 ? results[active] : results[0];
+          if (pick !== undefined) choose(pick);
+        } else if (e.key === "Escape") closeResults();
       });
       q.addEventListener("blur", function () { setTimeout(closeResults, 120); });
     }
@@ -1697,85 +1539,114 @@
     var hint = document.getElementById("btn-hint");
     if (hint) hint.addEventListener("click", function () {
       var last = state.chain.length ? state.chain[state.chain.length - 1] : state.start;
-      var path = shortestPath(last, state.target);
-      if (!path || path.length < 2) { setMsg("No route from here.", "bad"); return; }
-      state.hints++;
-      var tip;
-      if (path.length === 2) {
-        tip = P[last].n + " already shares a roster with " + P[state.target].n +
-              " — name the target to close it out.";
-      } else {
-        var next = path[1];
-        tip = "Try " + P[next].n + " (" + (P[next].p || "—") + ", " + careerSpan(next) + ").";
+      if (areTeammates(last, state.target)) {
+        state.hints++;
+        state.focusInput = true;
+        render();
+        setMsg("<b>Hint</b> " + esc(P[last].n) + " already shares a roster with the target — name it.", "good");
+        return;
       }
+      var pick = bestHint(last, state.target);
+      if (pick < 0) { setMsg("No route from here.", "bad"); return; }
+      state.hints++;
+      var tip = "<b>Hint</b> try " + esc(P[pick].n) + " (" + esc(P[pick].p || "—") + ", " + careerSpan(pick) + ").";
       state.focusInput = true;
-      render();              // repaints the hint counter, which clears the message
-      setMsg(tip, "good");   // so the tip has to be written back afterwards
+      render();
+      setMsg(tip, "good");
     });
 
     var undo = document.getElementById("btn-undo");
     if (undo) undo.addEventListener("click", function () {
       state.chain.pop();
+      state.misses.pop();
       state.lastAdded = -1;
       state.focusInput = true;
       render();
     });
 
     var give = document.getElementById("btn-give");
-    if (give) give.addEventListener("click", function () { finish(false); });
+    if (give) give.addEventListener("click", function () {
+      if (give.getAttribute("data-armed") === "1") { finish(false); return; }
+      give.setAttribute("data-armed", "1");
+      give.textContent = "Sure? Give up";
+      setTimeout(function () {
+        if (!give.parentNode) return;
+        give.removeAttribute("data-armed");
+        give.textContent = "Give up";
+      }, 3200);
+    });
 
     var shuffle = document.getElementById("btn-shuffle");
-    if (shuffle) shuffle.addEventListener("click", function () { startFree(null); });
+    if (shuffle) shuffle.addEventListener("click", function () { startFree(); });
 
-    var toFree = document.getElementById("btn-free");
-    if (toFree) toFree.addEventListener("click", function () { setMode("free"); });
-
-    var swaps = document.querySelectorAll(".plate-swap");
-    for (var i = 0; i < swaps.length; i++) {
-      swaps[i].addEventListener("click", function () {
+    var swaps = boardEl.querySelectorAll("[data-swap]");
+    for (var i23 = 0; i23 < swaps.length; i23++) {
+      swaps[i23].addEventListener("click", function () {
         state.pickingSlot = this.getAttribute("data-swap");
         var qEl = document.getElementById("q");
-        if (qEl) {
-          qEl.value = "";
-          qEl.focus();
-          setMsg("Choose a new " + state.pickingSlot + " player.", "good");
-        }
+        if (qEl) { qEl.value = ""; qEl.focus(); }
+        setMsg("Choose a new " + state.pickingSlot + " player.", "good");
       });
     }
   }
 
-  /* --------------------------------------------------------------- modes -- */
+  /* ---------------------------------------------------------------- modes -- */
   var DIFF_NOTE = {
-    easy:   "Teams and years shown",
-    medium: "Teams only — no years",
-    hard:   "No teams, no years"
+    easy:   "Teams and years shown · no downs",
+    medium: "Teams only · no downs",
+    hard:   "No teams, no years · <b>four downs</b>"
   };
 
   function renderDiffbar() {
     var bar = document.getElementById("diffbar");
     if (state.mode === "daily") {
-      bar.innerHTML = '<span class="diff-note">Daily always shows teams and years.</span>';
+      bar.innerHTML = '<span class="diff-note">Full detail, <b>four downs</b>. Same drive for everyone.</span>';
       return;
     }
     var opts = [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"]];
-    var h = '<span class="diff-label">Difficulty</span>' +
-            '<div class="tabs" role="group" aria-label="Difficulty">';
-    for (var i = 0; i < opts.length; i++) {
-      h += '<button class="tab" data-diff="' + opts[i][0] + '" aria-selected="' +
-        (state.difficulty === opts[i][0]) + '">' + opts[i][1] + "</button>";
+    var h = '<span class="diff-label">Difficulty</span><div class="tabs" role="group" aria-label="Difficulty">';
+    for (var i24 = 0; i24 < opts.length; i24++) {
+      h += '<button class="tab" data-diff="' + opts[i24][0] + '" aria-selected="' +
+        (state.difficulty === opts[i24][0]) + '">' + opts[i24][1] + "</button>";
     }
-    h += '</div><span class="diff-note">' + DIFF_NOTE[state.difficulty] + "</span>";
-    bar.innerHTML = h;
+    bar.innerHTML = h + '</div><span class="diff-note">' + DIFF_NOTE[state.difficulty] + "</span>";
 
     var btns = bar.querySelectorAll("[data-diff]");
-    for (var j = 0; j < btns.length; j++) {
-      btns[j].addEventListener("click", function () {
+    for (var j7 = 0; j7 < btns.length; j7++) {
+      btns[j7].addEventListener("click", function () {
         state.difficulty = this.getAttribute("data-diff");
-        saveDiff();
+        lsSet(K_DIFF, state.difficulty);
+        state.downs = 4;
         renderDiffbar();
         render();
       });
     }
+  }
+
+  function resetDrive(par) {
+    state.par = par;
+    state.chain = []; state.misses = []; state.curMisses = 0;
+    state.downs = 4; state.hints = 0;
+    state.done = false; state.won = false;
+    state.lastAdded = -1; state.pickingSlot = null;
+  }
+
+  function buildPuzzle(seed, pool, maxGap) {
+    pool = pool || POOL;
+    maxGap = maxGap === undefined ? 6 : maxGap;
+    var rnd = mulberry32(hashStr(seed)), best = null;
+    for (var a = 0; a < 220; a++) {
+      var x = pool[Math.floor(rnd() * pool.length)], y = pool[Math.floor(rnd() * pool.length)];
+      if (x === y) continue;
+      if (eraGap(x, y) > maxGap) continue;
+      var path = shortestPath(x, y);
+      if (!path) continue;
+      var links = path.length - 2;
+      if (links < 1 || links > 3) continue;
+      if (links === 2) return { start: x, target: y, par: links };
+      if (!best || Math.abs(links - 2) < Math.abs(best.par - 2)) best = { start: x, target: y, par: links };
+    }
+    return best;
   }
 
   function setMode(mode) {
@@ -1783,57 +1654,85 @@
     document.getElementById("tab-daily").setAttribute("aria-selected", String(mode === "daily"));
     document.getElementById("tab-free").setAttribute("aria-selected", String(mode === "free"));
     outcomeSlot.innerHTML = "";
+    if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
     renderDiffbar();
-    if (mode === "daily") startDaily(); else startFree(null);
-  }
-
-  function applyPuzzle(pz) {
-    state.start = pz.start;
-    state.target = pz.target;
-    state.par = pz.par;
-    state.chain = [];
-    state.hints = 0;
-    state.done = false;
-    state.gaveUp = false;
-    state.lastAdded = -1;
-    state.pickingSlot = null;
-    state.focusInput = false;
+    if (mode === "daily") startDaily(); else startFree();
   }
 
   function startDaily() {
-    var key = todayKey();
-    var pz = buildPuzzle("daily-" + key);
-    if (!pz) pz = randomPuzzle();
-    applyPuzzle(pz);
+    var pz = buildPuzzle("mtc-" + todayKey(), DAILY_POOL, 6) ||
+             buildPuzzle("mtc-" + todayKey(), POOL, 12);
+    state.start = pz.start; state.target = pz.target;
+    resetDrive(pz.par);
+    state.focusInput = false;
 
-    var saved = loadDay(key);
-    if (saved && saved.done) {
+    var saved = null;
+    try {
+      var raw = lsGet(K_DAY);
+      if (raw) { var o = JSON.parse(raw); if (o && o.day === todayKey()) saved = o; }
+    } catch (e) {}
+
+    if (saved) {
       state.chain = saved.chain || [];
+      state.misses = saved.misses || [];
       state.hints = saved.hints || 0;
       state.done = true;
-      state.gaveUp = !saved.won;
+      state.won = !!saved.won;
       render();
-      renderOutcome(!!saved.won);
+      renderOutcome();
       return;
     }
     render();
   }
 
-  function startFree(pz) {
+  function startFree() {
     outcomeSlot.innerHTML = "";
-    applyPuzzle(pz || randomPuzzle());
+    if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
+    var pz = buildPuzzle("free-" + Math.random());
+    state.start = pz.start; state.target = pz.target;
+    resetDrive(pz.par);
     state.focusInput = true;
     render();
   }
 
+  /* ---------------------------------------------------------------- intro -- */
+  function maybeIntro() {
+    if (lsGet(K_SEEN) === "1") return;
+    var ov = document.createElement("div");
+    ov.className = "intro";
+    ov.innerHTML = '<div class="intro-card"><h2>Move the chains</h2>' +
+      "<ol><li>You get a <b>start</b> player and a <b>target</b>.</li>" +
+      "<li>Name anyone who <b>shared a roster</b> with the start player.</li>" +
+      "<li>Keep going until you reach the target. A wrong guess costs a <b>down</b>.</li></ol>" +
+      '<div class="intro-eg">Tom Brady<br>&nbsp;&nbsp;↓ <b>Patriots 2019</b><br>Antonio Brown<br>' +
+      "&nbsp;&nbsp;↓ <b>Steelers 2010–18</b><br>Ben Roethlisberger</div>" +
+      '<button class="btn btn-key" id="intro-go">Start the drive</button></div>';
+    document.body.appendChild(ov);
+    document.getElementById("intro-go").addEventListener("click", function () {
+      lsSet(K_SEEN, "1");
+      ov.remove();
+    });
+  }
+
+  /* ------------------------------------------------------------------ go -- */
   document.getElementById("tab-daily").addEventListener("click", function () { setMode("daily"); });
   document.getElementById("tab-free").addEventListener("click", function () { setMode("free"); });
 
-  renderDiffbar();
+  var sndBtn = document.getElementById("sound");
+  sndBtn.setAttribute("aria-pressed", String(soundOn));
+  sndBtn.addEventListener("click", function () {
+    soundOn = !soundOn;
+    lsSet(K_SND, soundOn ? "1" : "0");
+    sndBtn.setAttribute("aria-pressed", String(soundOn));
+    if (soundOn) sfx.convert();
+  });
+
   document.getElementById("span-note").textContent = START_SEASON + "–" + END_SEASON;
   document.getElementById("foot-counts").textContent =
     N.toLocaleString() + " players · " + START_SEASON + "–" + END_SEASON + " rosters";
 
+  renderDiffbar();
   startDaily();
+  maybeIntro();
 })();
 </script>
