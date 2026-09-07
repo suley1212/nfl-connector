@@ -8,7 +8,14 @@ roster with.
 
 Two players are teammates if they appear on the same team's roster in the same
 season. **Par** is the fewest links possible, found by bidirectional BFS over
-the roster graph.
+the roster graph. Reaching the target is a touchdown; doing it at par with no
+wrong guesses and no hints is a **perfect drive**.
+
+Par is 1 on roughly a third of days and 2 on the rest. It is never 3: sampling
+the graph, no two players recognisable enough to be endpoints are ever three
+links apart, at any era gap — 90-man rosters and stars who change teams keep
+everyone inside two hops. Widening the season window backwards is what would
+create genuine par-3 days.
 
 ## How it plays
 

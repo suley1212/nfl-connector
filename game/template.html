@@ -362,6 +362,11 @@
   .outcome.perfect .wincard { border-top-color: var(--marker); }
   .outcome.lose .wincard { border-top-color: var(--flag); }
 
+  .win-flag {
+    font-size: 10px; font-weight: 700; letter-spacing: .22em;
+    text-transform: uppercase; color: var(--marker); margin-bottom: 7px;
+  }
+
   .win-title {
     font-family: "Anton", Impact, sans-serif;
     font-size: clamp(38px, 11.5vw, 62px); line-height: .9;
@@ -531,7 +536,7 @@
       <p>Name someone who shared a roster with the start player, then someone who shared a roster with <em>them</em>, until you reach the target.</p>
       <p>Two players are teammates if they were on the <b>same team's roster in the same season</b> &mdash; regular season, practice squad, or a stint that ended in a cut. They did not have to play a snap together.</p>
       <p><b>Downs.</b> In the daily and on hard, a wrong guess costs a down. Convert a link and the chains move &mdash; four fresh downs. Burn all four on one link and it is a turnover. Easy and medium free play have no downs; guess freely.</p>
-      <p><b>Par</b> is the fewest links possible. Matching it with no wrong guesses and no hints is a touchdown.</p>
+      <p><b>Par</b> is the fewest links possible &mdash; some days it is one link, most days two. Reach the target and it is a touchdown; do it at par with no wrong guesses and no hints and it is a <b>perfect drive</b>.</p>
       <p>Rosters cover <code id="span-note">2000&ndash;2026</code>, so only stints from those seasons count.</p>
     </div>
   </details>
@@ -1335,10 +1340,11 @@
     var links = state.chain.length;
     var flags = state.misses.reduce(function (a, b) { return a + b; }, 0) + state.curMisses;
 
-    var title = won ? (perfect ? "Touchdown" : "Chain complete") : "Turnover";
+    var title = won ? "Touchdown" : "Turnover";
     var cls = "outcome " + (won ? (perfect ? "win perfect" : "win") : "lose");
 
     var h = '<div class="' + cls + '"><div class="wincard">' +
+      (perfect ? '<div class="win-flag">Perfect drive</div>' : "") +
       '<div class="win-title">' + title + "</div>" +
       '<div class="win-sub"><span><b>' + links + "</b>link" + (links === 1 ? "" : "s") + "</span>" +
       "<span><b>" + state.par + "</b>par</span>" +
@@ -1631,11 +1637,14 @@
     state.lastAdded = -1; state.pickingSlot = null;
   }
 
-  function buildPuzzle(seed, pool, maxGap) {
+  /* Aim for a specific par. Par-2 pairs are so common among famous players
+     that accepting the first one found made every single day a par 2. */
+  function buildPuzzle(seed, pool, maxGap, wantPar) {
     pool = pool || POOL;
     maxGap = maxGap === undefined ? 6 : maxGap;
+    wantPar = wantPar || 2;
     var rnd = mulberry32(hashStr(seed)), best = null;
-    for (var a = 0; a < 220; a++) {
+    for (var a = 0; a < 500; a++) {
       var x = pool[Math.floor(rnd() * pool.length)], y = pool[Math.floor(rnd() * pool.length)];
       if (x === y) continue;
       if (eraGap(x, y) > maxGap) continue;
@@ -1643,10 +1652,23 @@
       if (!path) continue;
       var links = path.length - 2;
       if (links < 1 || links > 3) continue;
-      if (links === 2) return { start: x, target: y, par: links };
-      if (!best || Math.abs(links - 2) < Math.abs(best.par - 2)) best = { start: x, target: y, par: links };
+      if (links === wantPar) return { start: x, target: y, par: links };
+      if (!best || Math.abs(links - wantPar) < Math.abs(best.par - wantPar)) {
+        best = { start: x, target: y, par: links };
+      }
     }
     return best;
+  }
+
+  /* A week with some rhythm to it, rather than the same shape every morning.
+     Only 1 and 2 are on the table: sampling the graph, no two players this
+     recognisable are ever three links apart — 90-man rosters and stars who
+     change teams keep everyone inside two hops, at every era gap. Widening
+     the season window backwards is what would create genuine par-3 days. */
+  var PAR_GAP = 6;
+
+  function parForDay(key) {
+    return mulberry32(hashStr("par-" + key))() < 0.35 ? 1 : 2;
   }
 
   function setMode(mode) {
@@ -1660,8 +1682,10 @@
   }
 
   function startDaily() {
-    var pz = buildPuzzle("mtc-" + todayKey(), DAILY_POOL, 6) ||
-             buildPuzzle("mtc-" + todayKey(), POOL, 12);
+    var key = todayKey();
+    var want = parForDay(key);
+    var pz = buildPuzzle("mtc-" + key, DAILY_POOL, PAR_GAP, want) ||
+             buildPuzzle("mtc-" + key, POOL, 12, want);
     state.start = pz.start; state.target = pz.target;
     resetDrive(pz.par);
     state.focusInput = false;
@@ -1688,7 +1712,8 @@
   function startFree() {
     outcomeSlot.innerHTML = "";
     if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
-    var pz = buildPuzzle("free-" + Math.random());
+    var want = Math.random() < 0.35 ? 1 : 2;
+    var pz = buildPuzzle("free-" + Math.random(), POOL, PAR_GAP, want);
     state.start = pz.start; state.target = pz.target;
     resetDrive(pz.par);
     state.focusInput = true;
