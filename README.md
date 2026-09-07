@@ -12,6 +12,20 @@ solved in, found by bidirectional BFS over the roster graph.
 Modes: a **daily** puzzle seeded by the date (same for everyone), and **free
 play** where you pick either endpoint or shuffle a random pair.
 
+Free play has three difficulty settings, which control how much the board
+gives away:
+
+| | Plates and connectors show |
+|---|---|
+| Easy | team + seasons |
+| Medium | team only |
+| Hard | position only — rosters come from memory |
+
+Completing a chain reveals every connection regardless of setting, so hard
+mode pays off at the end. The daily puzzle is always full detail. Search
+results keep team codes at every setting, since they are needed to tell apart
+players who share a name.
+
 ## Layout
 
 ```
@@ -45,9 +59,12 @@ Three things the build has to handle:
   merge cleanly across seasons. (Before ~1990 it is absent entirely, which is
   why the window starts at 2000.)
 - **Team code aliases.** nflverse uses different abbreviations by era — `ARZ`
-  for `ARI`, `BLT` for `BAL`, `CLV`, `HST`, `SL` — but never two codes for one
-  franchise in the same season, so teammate detection is unaffected. The game
-  maps codes to era-accurate names (`OAK` → Oakland Raiders, `LV` → Las Vegas).
+  for `ARI`, `BLT` for `BAL`, plus `CLV`, `HST`, `SL` — but never two codes for
+  one franchise in the same season, so teammate detection was never affected.
+  Left alone they still read wrong (a career showing "ARZ 2008–15, ARI 2016" as
+  two teams), so the build folds them to one code before collapsing stints,
+  which merges the adjoining seasons into a single run. Real relocations stay
+  distinct and era-accurate: `OAK` → Oakland Raiders, `LV` → Las Vegas.
 - **Fame vs. window.** `w_av`, Pro Bowls, All-Pros and HOF from `draft_picks`
   score how well-known a player is, used to pick puzzle endpoints and rank
   search. Since those are career-wide but the graph starts in 2000, fame is

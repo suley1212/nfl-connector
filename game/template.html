@@ -509,6 +509,154 @@
     margin-top: 3px;
   }
 
+  /* -------------------------------------------------------- difficulty -- */
+  .diffbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 28px;
+  }
+
+  .diffbar .tab { padding: 5px 11px; font-size: 11px; }
+
+  .diff-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .diff-note { font-size: 12px; color: var(--muted); }
+
+  .chip-blind {
+    background: transparent;
+    color: var(--good);
+    border: 1px dashed var(--good);
+    font-family: "Archivo", sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 7px;
+  }
+
+  /* ------------------------------------------------------ win celebration -- */
+  #confetti {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 90;
+  }
+
+  .hero {
+    text-align: center;
+    padding: 26px 18px 20px;
+    background: var(--raise);
+    border-top: 5px solid var(--good);
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  .outcome.perfect .hero { border-top-color: var(--marker); }
+
+  .hero-title {
+    font-family: "Bebas Neue", "Archivo Narrow", Impact, sans-serif;
+    font-size: clamp(42px, 13vw, 68px);
+    line-height: .88;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: var(--good);
+    animation: slam .52s cubic-bezier(.18,1.35,.35,1);
+  }
+
+  .outcome.perfect .hero-title { color: var(--marker); }
+
+  @keyframes slam {
+    0%   { opacity: 0; transform: scale(1.45); letter-spacing: .3em; }
+    55%  { opacity: 1; }
+    100% { opacity: 1; transform: scale(1); letter-spacing: .02em; }
+  }
+
+  .hero-score {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 9px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    font-size: 12px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .hero-score b {
+    font-family: "Bebas Neue", Impact, sans-serif;
+    font-size: 25px;
+    font-weight: 400;
+    color: var(--chalk);
+    font-variant-numeric: tabular-nums;
+    margin-right: 2px;
+  }
+
+  .hero-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--faint); align-self: center; }
+
+  /* the finished chain, stamped in one link at a time */
+  .replay {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .replay-node {
+    font-family: "Bebas Neue", "Archivo Narrow", Impact, sans-serif;
+    font-size: 19px;
+    line-height: 1;
+    padding: 7px 10px 5px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--surface);
+    opacity: 0;
+    animation: pop .32s cubic-bezier(.2,1.3,.4,1) forwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  .replay-node.is-end { border-color: var(--muted); }
+
+  .replay-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0;
+    animation: pop .32s cubic-bezier(.2,1.3,.4,1) forwards;
+    animation-delay: var(--d, 0ms);
+  }
+
+  .replay-chip {
+    font-family: "Bebas Neue", Impact, sans-serif;
+    font-size: 12px;
+    line-height: 1;
+    padding: 4px 6px 3px;
+    border-radius: 2px;
+    background: var(--tc);
+    color: var(--tc-ink);
+    border: 1px solid rgba(0,0,0,.18);
+  }
+
+  .replay-yrs {
+    font-family: "Roboto Mono", ui-monospace, Consolas, monospace;
+    font-size: 10.5px;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(6px) scale(.94); }
+    to   { opacity: 1; transform: none; }
+  }
+
   /* -------------------------------------------------------------- misc -- */
   .how {
     border: 1px solid var(--line);
@@ -565,6 +713,9 @@
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
+    /* these animate from opacity:0 with `forwards`, so killing the animation
+       would otherwise leave them permanently invisible */
+    .replay-node, .replay-link { opacity: 1 !important; }
   }
 
   @media (max-width: 460px) {
@@ -585,6 +736,7 @@
       <button class="tab" role="tab" id="tab-daily" aria-selected="true">Daily</button>
       <button class="tab" role="tab" id="tab-free" aria-selected="false">Free play</button>
     </div>
+    <div class="diffbar" id="diffbar"></div>
   </header>
 
   <section class="board" id="board">
@@ -599,6 +751,7 @@
       <p>You get a <b>start</b> player and a <b>target</b> player. Name someone who shared a roster with the start player, then someone who shared a roster with <em>them</em>, and keep going until you reach the target.</p>
       <p>Two players count as teammates if they appear on the <b>same team's roster in the same season</b> &mdash; regular season, practice squad, or a stint that ended in a cut. They did not have to play a snap together.</p>
       <p><b>Par</b> is the fewest links the puzzle can be solved in. Beating par is not possible; matching it is the goal.</p>
+      <p>Free play has three <b>difficulty</b> settings, which change how much the board tells you: <b>Easy</b> shows each team and the seasons behind it, <b>Medium</b> shows teams only, and <b>Hard</b> shows neither &mdash; you get a name and a position, and the rosters have to come from memory. Finishing a chain reveals every connection, whichever setting you played on. The daily puzzle always shows full detail.</p>
       <p>Rosters cover <code id="span-note">2000&ndash;2026</code>, so only teams and stints from those seasons count. Tom Brady connects through New England and Tampa Bay, not Michigan.</p>
     </div>
   </details>
@@ -894,18 +1047,33 @@
   }
 
   /* --------------------------------------------------------------- utils -- */
-  function teamSummary(idx, max) {
+  function teamSummary(idx, max, withYears) {
     var st = P[idx].s.slice().sort(function (a, b) { return a[1] - b[1]; });
-    var parts = [];
-    for (var i9 = 0; i9 < st.length && parts.length < max; i9++) {
+    var parts = [], shown = 0;
+    for (var i9 = 0; i9 < st.length; i9++) {
       var code = TEAMS[st[i9][0]];
-      var yrs = st[i9][1] === st[i9][2]
+      if (!withYears) {
+        if (parts.indexOf(code) !== -1) continue;   // one entry per franchise
+        if (parts.length >= max) { shown = -1; break; }
+        parts.push(code);
+        continue;
+      }
+      if (parts.length >= max) { shown = -1; break; }
+      parts.push(code + " " + (st[i9][1] === st[i9][2]
         ? String(st[i9][1])
-        : st[i9][1] + "–" + String(st[i9][2]).slice(2);
-      parts.push(code + " " + yrs);
+        : st[i9][1] + "–" + String(st[i9][2]).slice(2)));
     }
-    if (st.length > parts.length) parts.push("+" + (st.length - parts.length));
+    if (shown === -1) parts.push("+more");
     return parts.join(", ");
+  }
+
+  /* How much of the puzzle is on show. Daily is always full detail, and a
+     finished board reveals everything — seeing the connections you built
+     blind is the payoff for playing on hard. */
+  function detail() {
+    if (state.mode === "daily") return "easy";
+    if (state.done) return "easy";
+    return state.difficulty;
   }
 
   function careerSpan(idx) {
@@ -973,6 +1141,7 @@
   /* ---------------------------------------------------------------- state -- */
   var state = {
     mode: "daily",
+    difficulty: "easy",
     start: 0,
     target: 0,
     par: 0,
@@ -986,6 +1155,18 @@
 
   var STORE_KEY = "nflc.stats.v2";
   var DAY_KEY = "nflc.day.v2";
+  var DIFF_KEY = "nflc.diff.v1";
+
+  try {
+    var savedDiff = localStorage.getItem(DIFF_KEY);
+    if (savedDiff === "easy" || savedDiff === "medium" || savedDiff === "hard") {
+      state.difficulty = savedDiff;
+    }
+  } catch (e) {}
+
+  function saveDiff() {
+    try { localStorage.setItem(DIFF_KEY, state.difficulty); } catch (e) {}
+  }
 
   function loadStats() {
     try {
@@ -1032,12 +1213,15 @@
     var swap = swappable
       ? '<button class="plate-swap" data-swap="' + role + '">Change</button>'
       : "";
+    var d = detail();
+    var meta = esc(P[idx].p || "—");
+    if (d !== "hard") meta += " · " + esc(teamSummary(idx, 4, d === "easy"));
+
     return '<div class="plate" data-role="' + role + '">' +
       '<span class="rail"></span>' +
       '<div class="plate-body">' +
         '<div class="plate-name">' + esc(P[idx].n) + "</div>" +
-        '<div class="plate-meta">' + esc(P[idx].p || "—") + " · " +
-          esc(teamSummary(idx, 4)) + "</div>" +
+        '<div class="plate-meta">' + meta + "</div>" +
       "</div>" + tag + swap +
     "</div>";
   }
@@ -1047,16 +1231,29 @@
     if (!stints.length) {
       return '<div class="conn is-gap"><span class="conn-empty">not yet linked</span></div>';
     }
+    var d = detail();
+    var cls = "conn" + (isNew ? " is-new" : "");
+
+    if (d === "hard") {
+      return '<div class="' + cls + '">' +
+        '<span class="chip chip-blind">LINKED</span>' +
+        '<span class="conn-text">shared a roster</span>' +
+      "</div>";
+    }
+
     var s0 = stints[0];
     var code = TEAMS[s0.team];
     var fr = franchise(code, s0.to);
-    var years = s0.from === s0.to ? String(s0.from) : s0.from + "–" + s0.to;
     var extra = stints.length > 1 ? " +" + (stints.length - 1) + " more" : "";
-    return '<div class="conn' + (isNew ? " is-new" : "") + '">' +
+    var years = "";
+    if (d === "easy") {
+      var span = s0.from === s0.to ? String(s0.from) : s0.from + "–" + s0.to;
+      years = ' <span class="conn-years">' + span + "</span>" + esc(extra);
+    }
+    return '<div class="' + cls + '">' +
       '<span class="chip" style="--tc:' + fr.color + ";--tc-ink:" + inkFor(fr.color) + '">' +
         esc(code) + "</span>" +
-      '<span class="conn-text"><b>' + esc(fr.short) + "</b> " +
-        '<span class="conn-years">' + years + "</span>" + esc(extra) + "</span>" +
+      '<span class="conn-text"><b>' + esc(fr.short) + "</b>" + years + "</span>" +
     "</div>";
   }
 
@@ -1151,7 +1348,7 @@
       h += '<button class="result" data-idx="' + idx + '">' +
         '<span class="result-name">' + esc(P[idx].n) + "</span>" +
         '<span class="result-pos">' + esc(P[idx].p || "—") + "</span>" +
-        '<span class="result-teams">' + esc(teamSummary(idx, 3)) + "</span>" +
+        '<span class="result-teams">' + esc(teamSummary(idx, 3, detail() === "easy")) + "</span>" +
       "</button>";
     }
     box.innerHTML = h;
@@ -1243,13 +1440,18 @@
 
     state.focusInput = true;
     render();
-    setMsg("Linked through " + linkLabel(last, idx) + ".", "good");
+    var lbl = linkLabel(last, idx);
+    setMsg(lbl ? "Linked through " + lbl + "." : "Linked — they shared a roster.", "good");
   }
 
+  /* Empty on hard, where naming the team would give away what is hidden. */
   function linkLabel(a, b) {
     var st = sharedStints(a, b);
     if (!st.length) return "";
+    var d = detail();
+    if (d === "hard") return "";
     var fr = franchise(TEAMS[st[0].team], st[0].to);
+    if (d === "medium") return fr.short;
     var yrs = st[0].from === st[0].to ? String(st[0].from) : st[0].from + "–" + st[0].to;
     return fr.short + " " + yrs;
   }
@@ -1261,13 +1463,15 @@
     state.lastAdded = -1;
     render();
     renderOutcome(won);
+    if (won) celebrate(chainColors());
     if (state.mode === "daily") {
       recordDaily(won);
       saveDay(todayKey(), {
         chain: state.chain, hints: state.hints, done: true, won: won
       });
     }
-    outcomeSlot.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // land the hero at the top of the view so the win fills the screen
+    outcomeSlot.scrollIntoView({ behavior: "smooth", block: won ? "start" : "nearest" });
   }
 
   function recordDaily(won) {
@@ -1287,6 +1491,95 @@
     saveStats(st);
   }
 
+  /* The colours of the teams you actually routed through. */
+  function chainColors() {
+    var seq = [state.start].concat(state.chain, [state.target]), out = [];
+    for (var i = 0; i < seq.length - 1; i++) {
+      var st = sharedStints(seq[i], seq[i + 1]);
+      if (st.length) out.push(franchise(TEAMS[st[0].team], st[0].to).color);
+    }
+    if (!out.length) out = ["#2C6FB5"];
+    out.push("#F2C230");
+    return out;
+  }
+
+  function celebrate(colors) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var old = document.getElementById("confetti");
+    if (old) old.remove();
+
+    var cv = document.createElement("canvas");
+    cv.id = "confetti";
+    cv.setAttribute("aria-hidden", "true");
+    document.body.appendChild(cv);
+
+    var ctx = cv.getContext("2d");
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = window.innerWidth, H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var bits = [], count = Math.max(70, Math.min(170, Math.round(W / 6)));
+    for (var i = 0; i < count; i++) {
+      bits.push({
+        x: Math.random() * W,
+        y: -20 - Math.random() * H * .6,
+        vx: (Math.random() - .5) * 1.7,
+        vy: 2.2 + Math.random() * 3.6,
+        w: 5 + Math.random() * 5,
+        h: 8 + Math.random() * 7,
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - .5) * .24,
+        c: colors[i % colors.length]
+      });
+    }
+
+    var t0 = performance.now(), DUR = 3200, FADE = 800;
+    function frame(now) {
+      var el = now - t0;
+      if (el > DUR) { cv.remove(); return; }
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalAlpha = el > DUR - FADE ? (DUR - el) / FADE : 1;
+      for (var j = 0; j < bits.length; j++) {
+        var b = bits[j];
+        b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.vy += .045;
+        ctx.save();
+        ctx.translate(b.x, b.y);
+        ctx.rotate(b.rot);
+        ctx.fillStyle = b.c;
+        ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h);
+        ctx.restore();
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* The finished chain, stamped in one link at a time. */
+  function replayHTML() {
+    var seq = [state.start].concat(state.chain, [state.target]);
+    var h = '<div class="replay">', d = 0;
+    for (var i = 0; i < seq.length; i++) {
+      var endCls = (i === 0 || i === seq.length - 1) ? " is-end" : "";
+      h += '<span class="replay-node' + endCls + '" style="--d:' + d + 'ms">' +
+           esc(P[seq[i]].n) + "</span>";
+      d += 120;
+      if (i < seq.length - 1) {
+        var st = sharedStints(seq[i], seq[i + 1]);
+        if (st.length) {
+          var code = TEAMS[st[0].team], fr = franchise(code, st[0].to);
+          var yrs = st[0].from === st[0].to ? String(st[0].from) : st[0].from + "–" + st[0].to;
+          h += '<span class="replay-link" style="--d:' + d + 'ms">' +
+            '<span class="replay-chip" style="--tc:' + fr.color + ";--tc-ink:" +
+              inkFor(fr.color) + '">' + esc(code) + "</span>" +
+            '<span class="replay-yrs">' + yrs + "</span></span>";
+        }
+        d += 120;
+      }
+    }
+    return h + "</div>";
+  }
+
   function shareText() {
     var linkEmoji = state.chain.length === state.par ? "🏈" : "🟡";
     var line = "";
@@ -1302,21 +1595,29 @@
   function renderOutcome(won) {
     var st = loadStats();
     var links = state.chain.length;
-    var title, sub;
-    if (won) {
-      if (links === state.par && state.hints === 0) { title = "Par."; sub = "Shortest possible chain, no hints."; }
-      else if (links === state.par) { title = "Solved"; sub = "Par chain, with " + state.hints + " hint" + (state.hints === 1 ? "" : "s") + "."; }
-      else { title = "Solved"; sub = links + " links against a par of " + state.par + "."; }
-    } else {
-      title = "Chain broken";
-      sub = "Here is one shortest route.";
-    }
+    var perfect = won && links === state.par && state.hints === 0;
+    var html;
 
-    var html = '<div class="outcome ' + (won ? "win" : "lose") + '">' +
-      '<div class="outcome-head">' +
-        '<span class="outcome-title">' + esc(title) + "</span>" +
-        '<span class="outcome-sub">' + esc(sub) + "</span>" +
-      "</div><div class=\"outcome-body\">";
+    if (won) {
+      html = '<div class="outcome win' + (perfect ? " perfect" : "") + '">' +
+        '<div class="hero">' +
+          '<div class="hero-title">' + (perfect ? "Perfect chain" : "Chain complete") + "</div>" +
+          '<div class="hero-score">' +
+            "<span><b>" + links + "</b>link" + (links === 1 ? "" : "s") + "</span>" +
+            '<span class="hero-dot"></span>' +
+            "<span><b>" + state.par + "</b>par</span>" +
+            (state.hints ? '<span class="hero-dot"></span><span><b>' + state.hints +
+              "</b>hint" + (state.hints === 1 ? "" : "s") + "</span>" : "") +
+          "</div>" +
+        "</div>" +
+        '<div class="outcome-body">' + replayHTML();
+    } else {
+      html = '<div class="outcome lose">' +
+        '<div class="outcome-head">' +
+          '<span class="outcome-title">Chain broken</span>' +
+          '<span class="outcome-sub">Here is one shortest route.</span>' +
+        "</div><div class=\"outcome-body\">";
+    }
 
     if (!won) {
       var path = shortestPath(state.start, state.target);
@@ -1444,11 +1745,45 @@
   }
 
   /* --------------------------------------------------------------- modes -- */
+  var DIFF_NOTE = {
+    easy:   "Teams and years shown",
+    medium: "Teams only — no years",
+    hard:   "No teams, no years"
+  };
+
+  function renderDiffbar() {
+    var bar = document.getElementById("diffbar");
+    if (state.mode === "daily") {
+      bar.innerHTML = '<span class="diff-note">Daily always shows teams and years.</span>';
+      return;
+    }
+    var opts = [["easy", "Easy"], ["medium", "Medium"], ["hard", "Hard"]];
+    var h = '<span class="diff-label">Difficulty</span>' +
+            '<div class="tabs" role="group" aria-label="Difficulty">';
+    for (var i = 0; i < opts.length; i++) {
+      h += '<button class="tab" data-diff="' + opts[i][0] + '" aria-selected="' +
+        (state.difficulty === opts[i][0]) + '">' + opts[i][1] + "</button>";
+    }
+    h += '</div><span class="diff-note">' + DIFF_NOTE[state.difficulty] + "</span>";
+    bar.innerHTML = h;
+
+    var btns = bar.querySelectorAll("[data-diff]");
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].addEventListener("click", function () {
+        state.difficulty = this.getAttribute("data-diff");
+        saveDiff();
+        renderDiffbar();
+        render();
+      });
+    }
+  }
+
   function setMode(mode) {
     state.mode = mode;
     document.getElementById("tab-daily").setAttribute("aria-selected", String(mode === "daily"));
     document.getElementById("tab-free").setAttribute("aria-selected", String(mode === "free"));
     outcomeSlot.innerHTML = "";
+    renderDiffbar();
     if (mode === "daily") startDaily(); else startFree(null);
   }
 
@@ -1494,6 +1829,7 @@
   document.getElementById("tab-daily").addEventListener("click", function () { setMode("daily"); });
   document.getElementById("tab-free").addEventListener("click", function () { setMode("free"); });
 
+  renderDiffbar();
   document.getElementById("span-note").textContent = START_SEASON + "–" + END_SEASON;
   document.getElementById("foot-counts").textContent =
     N.toLocaleString() + " players · " + START_SEASON + "–" + END_SEASON + " rosters";

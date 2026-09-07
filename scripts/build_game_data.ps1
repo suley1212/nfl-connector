@@ -95,6 +95,15 @@ $undraftedBoost = @{
 }
 
 # ------------------------------------------------------------------ parsing --
+# nflverse switches abbreviation schemes by era: 2002-2015 rosters use ARZ/BLT/
+# CLV/HST/SL where the surrounding years use ARI/BAL/CLE/HOU/STL. No season ever
+# uses both codes for one franchise, so teammate detection was never affected,
+# but leaving them split makes a career read "ARZ 2008-15, ARI 2016" as if those
+# were different teams. Fold them together before stints are collapsed so the
+# adjoining seasons merge into one run. Genuine relocations (OAK/LV, SD/LAC,
+# STL/LA) stay distinct - those are era-accurate, not aliases.
+$CANON = @{ "ARZ" = "ARI"; "BLT" = "BAL"; "CLV" = "CLE"; "HST" = "HOU"; "SL" = "STL" }
+
 class PlayerRec {
     [string]$Name
     [string]$Gsis
@@ -118,6 +127,7 @@ foreach ($season in $StartSeason..$EndSeason) {
         $team = $r.team
         $name = $r.full_name
         if ([string]::IsNullOrWhiteSpace($team) -or [string]::IsNullOrWhiteSpace($name)) { continue }
+        if ($CANON.ContainsKey($team)) { $team = $CANON[$team] }
 
         $gsis = $r.gsis_id
         if (-not [string]::IsNullOrWhiteSpace($gsis)) { $key = "g:" + $gsis }
