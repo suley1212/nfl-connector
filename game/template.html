@@ -509,6 +509,12 @@
     .who-name { font-size: 15px; }
     .result-pos { display: none; }   /* the span disambiguates; the chip is noise */
     .headright { gap: 10px; }
+
+    /* One row cannot hold a long name and a team list at this width: the name
+       wraps and the nowrap meta runs off the edge. Stack them instead. */
+    .result { flex-wrap: wrap; gap: 2px 8px; padding: 7px 9px; }
+    .result-name { flex: 1 1 100%; }
+    .result-meta { margin-left: 0; white-space: normal; font-size: 10px; }
   }
 </style>
 
