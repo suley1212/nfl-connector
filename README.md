@@ -7,15 +7,19 @@ roster with.
 > (Brady & Brown: NE 2019, TB 2020–21 · Brown & Roethlisberger: PIT 2010–18)
 
 Two players are teammates if they appear on the same team's roster in the same
-season. **Par** is the fewest links possible, found by bidirectional BFS over
-the roster graph. Reaching the target is a touchdown; doing it at par with no
-wrong guesses and no hints is a **perfect drive**.
+season. Reaching the target is a **touchdown**, however many links it took;
+getting there with no wrong guesses and no hints is a **perfect drive**.
 
-Par is 1 on roughly a third of days and 2 on the rest. It is never 3: sampling
-the graph, no two players recognisable enough to be endpoints are ever three
-links apart, at any era gap — 90-man rosters and stars who change teams keep
-everyone inside two hops. Widening the season window backwards is what would
-create genuine par-3 days.
+There is deliberately no par. Your chain length is reported, never graded —
+the number is there so people can compare drives with each other, not so the
+game can tell you that you fell short of some ideal.
+
+The shortest possible chain is still computed by bidirectional BFS, but only
+to *choose* the pair: it keeps a drive from being trivially already-teammates
+or a slog. It is never shown. Internally that target is 1 on roughly a third
+of days and 2 on the rest — never 3, because sampling the graph, no two
+players recognisable enough to be endpoints are ever three links apart at any
+era gap. Widening the season window backwards is what would change that.
 
 ## How it plays
 
@@ -38,13 +42,14 @@ full detail, and always four downs.
 spoil the puzzle:
 
 ```
-Move The Chains #1
-🔵🟨🟩🟡
-2 links · par 2 · 🚩1 · 💡2
+Move The Chains · Sep 7
+🔵🟩🟨🟡
+2 links · 🚩1 · 💡2
 ```
 
 Start, one square per link (green clean, yellow after a miss, 🏈 if the whole
-run was perfect), target. Par with no misses and no hints is a touchdown.
+run was perfect), target. The strip's length *is* the score — that is the
+number friends compare.
 
 ## Layout
 

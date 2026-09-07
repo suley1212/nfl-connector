@@ -231,7 +231,7 @@
     background: var(--pitch-3); border: 1px solid var(--line);
   }
 
-  /* par made visible up front, the way Wordle shows five blank tiles */
+  /* the open slot waiting on your next name */
   .socket {
     padding: 11px 14px; border-radius: 3px; margin: 7px 0 0 26px;
     border: 1px dashed var(--line); background: transparent;
@@ -459,6 +459,10 @@
   .stat-k { font-size: 8.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-top: 3px; }
 
   .dist { display: flex; flex-direction: column; gap: 4px; }
+  .dist-cap {
+    font-size: 9px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dim); margin-bottom: 2px;
+  }
   .dist-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
   .dist-k { font-family: "Roboto Mono", monospace; font-size: 10.5px; color: var(--dim); width: 26px; flex: 0 0 auto; }
   .dist-bar { height: 15px; background: var(--line); border-radius: 2px; min-width: 3px; transition: width 500ms cubic-bezier(.16,.9,.3,1); }
@@ -564,7 +568,7 @@
       <p>Name someone who shared a roster with the start player, then someone who shared a roster with <em>them</em>, until you reach the target.</p>
       <p>Two players are teammates if they were on the <b>same team's roster in the same season</b> &mdash; regular season, practice squad, or a stint that ended in a cut. They did not have to play a snap together.</p>
       <p><b>Downs.</b> In the daily and on hard, a wrong guess costs a down. Convert a link and the chains move &mdash; four fresh downs. Burn all four on one link and it is a turnover. Easy and medium free play have no downs; guess freely.</p>
-      <p><b>Par</b> is the fewest links possible &mdash; some days it is one link, most days two. Reach the target and it is a touchdown; do it at par with no wrong guesses and no hints and it is a <b>perfect drive</b>.</p>
+      <p>Reach the target and it is a <b>touchdown</b>, however many links it took. Get there without a single wrong guess or hint and it is a <b>perfect drive</b>. Your chain length is the number worth comparing &mdash; there is no target to fall short of.</p>
       <p>Rosters cover <code id="span-note">2000&ndash;2026</code>, so only stints from those seasons count.</p>
     </div>
   </details>
@@ -919,13 +923,13 @@
            String(d.getDate()).padStart(2, "0");
   }
 
-  /* Numbered, not dated: implies a series with history, and compares cleanly. */
-  var LAUNCH = Date.UTC(2026, 8, 7);
-  function puzzleNo() {
-    var d = new Date();
-    var today = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
-    return Math.floor((today - LAUNCH) / 86400000) + 1;
-  }
+  var MONTHS = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+  var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  function prettyDate() { var d = new Date(); return MONTHS[d.getMonth()] + " " + d.getDate(); }
+  function shortDate() { var d = new Date(); return MON[d.getMonth()] + " " + d.getDate(); }
 
   function msToMidnight() {
     var now = new Date();
@@ -976,13 +980,13 @@
   /* --------------------------------------------------------------- state -- */
   var state = {
     mode: "daily", difficulty: "easy",
-    start: 0, target: 0, par: 0,
+    start: 0, target: 0, minLinks: 0,
     chain: [], misses: [], curMisses: 0, downs: 4,
     hints: 0, done: false, won: false,
     lastAdded: -1, pickingSlot: null, focusInput: false
   };
 
-  var K_STATS = "mtc.stats.v1", K_DAY = "mtc.day.v1", K_DIFF = "mtc.diff.v1", K_SEEN = "mtc.seen.v1", K_SND = "mtc.snd.v1";
+  var K_STATS = "mtc.stats.v2", K_DAY = "mtc.day.v1", K_DIFF = "mtc.diff.v1", K_SEEN = "mtc.seen.v1", K_SND = "mtc.snd.v1";
 
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -996,7 +1000,8 @@
       var raw = lsGet(K_STATS);
       if (raw) return JSON.parse(raw);
     } catch (e) {}
-    return { played: 0, wins: 0, streak: 0, best: 0, perfect: 0, lastDay: null, bye: null, dist: [0, 0, 0, 0] };
+    return { played: 0, wins: 0, streak: 0, bestStreak: 0, best: 0, perfect: 0,
+             lastDay: null, bye: null, dist: [0, 0, 0, 0] };
   }
 
   function saveStats(s) { lsSet(K_STATS, JSON.stringify(s)); }
@@ -1069,12 +1074,13 @@
     var last = state.chain.length ? state.chain[state.chain.length - 1] : state.start;
 
     var slug = state.mode === "daily"
-      ? "Daily <b>#" + puzzleNo() + "</b>"
+      ? "Today&rsquo;s drive <b>" + prettyDate() + "</b>"
       : "Free play";
 
     var h = '<div class="board-head"><span class="slug">' + slug + "</span>" +
       '<div class="headright">' + downsHTML(opts.losing) +
-      '<div class="par-read"><span class="par-k">Par</span><span class="par-v">' + state.par + "</span></div>" +
+      '<div class="par-read"><span class="par-k">Links</span>' +
+      '<span class="par-v">' + state.chain.length + "</span></div>" +
       "</div></div>";
 
     h += '<div class="chain">' + zoneHTML(state.start, "start");
@@ -1090,15 +1096,8 @@
     if (state.done) {
       h += segHTML(prev, state.target, false);
     } else {
-      var remaining = state.par - state.chain.length;
-      if (remaining > 0) {
-        for (var sk = 0; sk < remaining; sk++) {
-          h += '<div class="socket' + (sk === 0 ? " is-next" : "") + '">' +
-            "<span>" + (sk === 0 ? "your move" : "link " + (state.chain.length + sk + 1)) + "</span><span>?</span></div>";
-        }
-      } else {
-        h += '<div class="socket is-next is-over"><span>over par</span><span>?</span></div>';
-      }
+      // one open slot: without a par there is no known chain length to telegraph
+      h += '<div class="socket is-next"><span>your move</span><span>?</span></div>';
       h += '<div class="marker-line' + (opts.advance ? " advance" : "") + '"></div>';
     }
 
@@ -1229,7 +1228,7 @@
       closeResults();
       render();
       if (!path) setMsg("No roster path between those two.", "bad");
-      else if (state.par <= 0) finish(true);
+      else if (state.minLinks <= 0) finish(true);
       return;
     }
 
@@ -1299,8 +1298,11 @@
     return out;
   }
 
+  /* A clean drive is judged on your own guesses, not against a benchmark:
+     every name you offered was a real teammate, and you asked for no help.
+     Chain length is reported, never graded. */
   function isPerfect() {
-    return state.won && state.chain.length === state.par && state.hints === 0 &&
+    return state.won && state.hints === 0 &&
            state.misses.reduce(function (a, b) { return a + b; }, 0) === 0;
   }
 
@@ -1317,10 +1319,12 @@
       for (var i19 = 0; i19 < state.chain.length; i19++) strip += state.misses[i19] ? "🟨" : "🟩";
       strip += "🟥";
     }
-    var head = state.mode === "daily" ? "Move The Chains #" + puzzleNo() : "Move The Chains — free play";
+    var head = state.mode === "daily"
+      ? "Move The Chains · " + shortDate()
+      : "Move The Chains — free play";
     var line3 = state.won
-      ? state.chain.length + " link" + (state.chain.length === 1 ? "" : "s") + " · par " + state.par
-      : "turnover · par " + state.par;
+      ? state.chain.length + " link" + (state.chain.length === 1 ? "" : "s")
+      : "turnover";
     if (flags) line3 += " · 🚩" + flags;
     if (state.hints) line3 += " · 💡" + state.hints;
     var out = head + "\n" + strip + "\n" + line3;
@@ -1351,10 +1355,12 @@
     if (won) {
       st.wins++;
       if (isPerfect()) st.perfect++;
-      var over = Math.min(3, Math.max(0, state.chain.length - state.par));
-      st.dist[over] = (st.dist[over] || 0) + 1;
+      var len = state.chain.length;
+      var bucket = Math.min(4, Math.max(1, len)) - 1;      // 1, 2, 3, 4+
+      st.dist[bucket] = (st.dist[bucket] || 0) + 1;
+      if (!st.best || len < st.best) st.best = len;
     }
-    if (st.streak > st.best) st.best = st.streak;
+    if (st.streak > st.bestStreak) st.bestStreak = st.streak;   // st.best is shortest chain
     st.lastDay = today;
     saveStats(st);
     return st;
@@ -1375,7 +1381,6 @@
       (perfect ? '<div class="win-flag">Perfect drive</div>' : "") +
       '<div class="win-title">' + title + "</div>" +
       '<div class="win-sub"><span><b>' + links + "</b>link" + (links === 1 ? "" : "s") + "</span>" +
-      "<span><b>" + state.par + "</b>par</span>" +
       (flags ? "<span><b>" + flags + "</b>flag" + (flags === 1 ? "" : "s") + "</span>" : "") +
       (state.hints ? "<span><b>" + state.hints + "</b>hint" + (state.hints === 1 ? "" : "s") + "</span>" : "") +
       "</div></div><div class=\"outcome-body\">";
@@ -1415,19 +1420,21 @@
         '<div class="stat"><div class="stat-v">' + st2.played + '</div><div class="stat-k">Played</div></div>' +
         '<div class="stat"><div class="stat-v">' + (st2.played ? Math.round(st2.wins / st2.played * 100) : 0) + '</div><div class="stat-k">Win %</div></div>' +
         '<div class="stat"><div class="stat-v">' + st2.streak + '</div><div class="stat-k">Streak</div></div>' +
-        '<div class="stat"><div class="stat-v">' + st2.perfect + '</div><div class="stat-k">Touchdowns</div></div>' +
+        '<div class="stat"><div class="stat-v">' + (st2.best || "—") + '</div><div class="stat-k">Shortest</div></div>' +
       "</div>";
 
+      // how many links your drives actually take — reported, not graded
       var dist = st2.dist || [0, 0, 0, 0];
       var maxd = Math.max(1, dist[0], dist[1], dist[2], dist[3]);
-      h += '<div class="dist">';
-      for (var dz = 0; dz < 4; dz++) {
-        var lbl = dz === 0 ? "par" : "+" + dz + (dz === 3 ? "+" : "");
-        var pct = Math.round(dist[dz] / maxd * 100);
-        h += '<div class="dist-row"><span class="dist-k">' + lbl + "</span>" +
-          '<span class="dist-bar' + (dist[dz] === maxd && dist[dz] > 0 ? " top" : "") +
+      var mine = won ? Math.min(4, links) : 0;
+      h += '<div class="dist"><div class="dist-cap">Links per drive</div>';
+      for (var dz = 1; dz <= 4; dz++) {
+        var n = dist[dz - 1];
+        var pct = Math.round(n / maxd * 100);
+        h += '<div class="dist-row"><span class="dist-k">' + (dz === 4 ? "4+" : dz) + "</span>" +
+          '<span class="dist-bar' + (dz === mine ? " top" : "") +
           '" style="width:' + Math.max(pct, 3) + '%"></span>' +
-          '<span class="dist-n">' + dist[dz] + "</span></div>";
+          '<span class="dist-n">' + n + "</span></div>";
       }
       h += "</div>";
     }
@@ -1657,20 +1664,22 @@
     }
   }
 
-  function resetDrive(par) {
-    state.par = par;
+  function resetDrive(minLinks) {
+    state.minLinks = minLinks;
     state.chain = []; state.misses = []; state.curMisses = 0;
     state.downs = 4; state.hints = 0;
     state.done = false; state.won = false;
     state.lastAdded = -1; state.pickingSlot = null;
   }
 
-  /* Aim for a specific par. Par-2 pairs are so common among famous players
-     that accepting the first one found made every single day a par 2. */
-  function buildPuzzle(seed, pool, maxGap, wantPar) {
+  /* The shortest possible chain is never shown to the player — it only shapes
+     which pair gets picked, so a drive is neither trivially already-teammates
+     nor a slog. Aiming at it matters: pairs one link apart are so common that
+     accepting the first found made every day the same shape. */
+  function buildPuzzle(seed, pool, maxGap, wantLinks) {
     pool = pool || POOL;
     maxGap = maxGap === undefined ? 6 : maxGap;
-    wantPar = wantPar || 2;
+    wantLinks = wantLinks || 2;
     var rnd = mulberry32(hashStr(seed)), best = null;
     for (var a = 0; a < 500; a++) {
       var x = pool[Math.floor(rnd() * pool.length)], y = pool[Math.floor(rnd() * pool.length)];
@@ -1680,22 +1689,21 @@
       if (!path) continue;
       var links = path.length - 2;
       if (links < 1 || links > 3) continue;
-      if (links === wantPar) return { start: x, target: y, par: links };
-      if (!best || Math.abs(links - wantPar) < Math.abs(best.par - wantPar)) {
-        best = { start: x, target: y, par: links };
+      if (links === wantLinks) return { start: x, target: y, min: links };
+      if (!best || Math.abs(links - wantLinks) < Math.abs(best.min - wantLinks)) {
+        best = { start: x, target: y, min: links };
       }
     }
     return best;
   }
 
-  /* A week with some rhythm to it, rather than the same shape every morning.
-     Only 1 and 2 are on the table: sampling the graph, no two players this
+  /* Some rhythm across the week rather than the same shape every morning.
+     Only 1 and 2 are reachable: sampling the graph, no two players this
      recognisable are ever three links apart — 90-man rosters and stars who
-     change teams keep everyone inside two hops, at every era gap. Widening
-     the season window backwards is what would create genuine par-3 days. */
-  var PAR_GAP = 6;
+     change teams keep everyone inside two hops, at every era gap. */
+  var ERA_GAP = 6;
 
-  function parForDay(key) {
+  function targetLinksForDay(key) {
     return mulberry32(hashStr("par-" + key))() < 0.35 ? 1 : 2;
   }
 
@@ -1711,11 +1719,11 @@
 
   function startDaily() {
     var key = todayKey();
-    var want = parForDay(key);
-    var pz = buildPuzzle("mtc-" + key, DAILY_POOL, PAR_GAP, want) ||
+    var want = targetLinksForDay(key);
+    var pz = buildPuzzle("mtc-" + key, DAILY_POOL, ERA_GAP, want) ||
              buildPuzzle("mtc-" + key, POOL, 12, want);
     state.start = pz.start; state.target = pz.target;
-    resetDrive(pz.par);
+    resetDrive(pz.min);
     state.focusInput = false;
 
     var saved = null;
@@ -1741,9 +1749,9 @@
     outcomeSlot.innerHTML = "";
     if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
     var want = Math.random() < 0.35 ? 1 : 2;
-    var pz = buildPuzzle("free-" + Math.random(), POOL, PAR_GAP, want);
+    var pz = buildPuzzle("free-" + Math.random(), POOL, ERA_GAP, want);
     state.start = pz.start; state.target = pz.target;
-    resetDrive(pz.par);
+    resetDrive(pz.min);
     state.focusInput = true;
     render();
   }
